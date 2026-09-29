@@ -1,6 +1,6 @@
 // ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open as text, with an
 // editable diagram preview beside them (or the full diagram editor through "Reopen Editor With…");
-// the text cursor and the diagram selection follow each other. The app's Explorer, Outline, Links
+// the text cursor and the diagram selection follow each other. The app's Explorer, Modules, Links
 // and Settings are in the ProjectScaffold side bar. Problems go to the Problems panel, the outline
 // of the text to the Outline view.
 import * as vscode from 'vscode'

@@ -69,8 +69,8 @@
         },
         {
           "type": "webview",
-          "id": "projectScaffold.panel.outline",
-          "name": "Outline"
+          "id": "projectScaffold.panel.modules",
+          "name": "Modules"
         },
         {
           "type": "webview",
@@ -424,7 +424,7 @@
         "projectScaffold.preview.showSideBar": {
           "type": "boolean",
           "default": true,
-          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Outline, Links, Settings)."
+          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Modules, Links, Settings)."
         }
       }
     }
