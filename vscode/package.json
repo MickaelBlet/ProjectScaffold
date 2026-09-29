@@ -1,0 +1,432 @@
+{
+  "name": "project-scaffold",
+  "displayName": "ProjectScaffold",
+  "description": "Software architecture editor for *.scaffold.yaml files: modules, ports, typed interfaces and links",
+  "version": "0.1.0",
+  "publisher": "mickaelblet",
+  "author": "Mickaël Blet",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MickaelBlet/ProjectScaffold"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onLanguage:json",
+    "workspaceContains:**/*.scaffold.{yaml,yml,json}",
+    "onWebviewPanel:projectScaffold.preview"
+  ],
+  "main": "./out/extension.js",
+  "files": [
+    "out/**/*.js",
+    "media/**",
+    "resources/**",
+    "LICENSE"
+  ],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "projectScaffold.editor",
+        "displayName": "ProjectScaffold",
+        "selector": [
+          {
+            "filenamePattern": "*.scaffold.yaml"
+          },
+          {
+            "filenamePattern": "*.scaffold.yml"
+          },
+          {
+            "filenamePattern": "*.scaffold.json"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "projectScaffold",
+          "title": "ProjectScaffold",
+          "icon": "resources/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "projectScaffold": [
+        {
+          "type": "webview",
+          "id": "projectScaffold.panel.explorer",
+          "name": "Explorer"
+        },
+        {
+          "type": "webview",
+          "id": "projectScaffold.panel.outline",
+          "name": "Outline"
+        },
+        {
+          "type": "webview",
+          "id": "projectScaffold.panel.links",
+          "name": "Links",
+          "visibility": "collapsed"
+        },
+        {
+          "type": "webview",
+          "id": "projectScaffold.panel.settings",
+          "name": "Settings",
+          "visibility": "collapsed"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "projectScaffold.showPreview",
+        "title": "Open Preview",
+        "category": "ProjectScaffold",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "projectScaffold.openWith",
+        "title": "Open in Full Diagram Editor",
+        "category": "ProjectScaffold",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "projectScaffold.showSource",
+        "title": "Show Source",
+        "category": "ProjectScaffold",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "projectScaffold.addModule",
+        "title": "Add Module",
+        "category": "ProjectScaffold",
+        "icon": "$(add)"
+      },
+      {
+        "command": "projectScaffold.arrange",
+        "title": "Auto-arrange",
+        "category": "ProjectScaffold",
+        "icon": "$(layout)"
+      },
+      {
+        "command": "projectScaffold.exportYaml",
+        "title": "Export YAML…",
+        "category": "ProjectScaffold",
+        "icon": "$(export)"
+      },
+      {
+        "command": "projectScaffold.exportJson",
+        "title": "Export JSON…",
+        "category": "ProjectScaffold",
+        "icon": "$(json)"
+      },
+      {
+        "command": "projectScaffold.exportPng",
+        "title": "Export Diagram as PNG…",
+        "category": "ProjectScaffold"
+      },
+      {
+        "command": "projectScaffold.exportSvg",
+        "title": "Export Diagram as SVG…",
+        "category": "ProjectScaffold"
+      },
+      {
+        "command": "projectScaffold.noop",
+        "title": "Handled by the diagram",
+        "category": "ProjectScaffold"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "projectScaffold.showPreview",
+          "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/ && !projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.openWith",
+          "when": "resourceExtname =~ /^\\.(ya?ml|json)$/ && !projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.showSource",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.addModule",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.arrange",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.exportYaml",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.exportJson",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.exportPng",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.exportSvg",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.noop",
+          "when": "false"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "projectScaffold.showPreview",
+          "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/ && activeEditor == 'workbench.editors.files.textFileEditor'",
+          "group": "navigation"
+        },
+        {
+          "command": "projectScaffold.showSource",
+          "when": "projectScaffold.diagramActive",
+          "group": "navigation@1"
+        },
+        {
+          "command": "projectScaffold.exportYaml",
+          "when": "projectScaffold.diagramActive",
+          "group": "navigation@2"
+        },
+        {
+          "command": "projectScaffold.exportJson",
+          "when": "projectScaffold.diagramActive",
+          "group": "navigation@3"
+        },
+        {
+          "command": "projectScaffold.exportPng",
+          "when": "projectScaffold.diagramActive",
+          "group": "export"
+        },
+        {
+          "command": "projectScaffold.exportSvg",
+          "when": "projectScaffold.diagramActive",
+          "group": "export"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "projectScaffold.openWith",
+          "when": "resourceExtname =~ /^\\.(ya?ml|json)$/",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "key": "ctrl+k v",
+        "mac": "cmd+k v",
+        "command": "projectScaffold.showPreview",
+        "when": "editorTextFocus && resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
+      },
+      {
+        "key": "ctrl+e",
+        "mac": "cmd+e",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+d",
+        "mac": "cmd+d",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+a",
+        "mac": "cmd+a",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+m",
+        "mac": "cmd+m",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+p",
+        "mac": "cmd+p",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+shift+p",
+        "mac": "cmd+shift+p",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+0",
+        "mac": "cmd+0",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+g",
+        "mac": "cmd+g",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+,",
+        "mac": "cmd+,",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+shift+f",
+        "mac": "cmd+shift+f",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+alt+l",
+        "mac": "cmd+alt+l",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+alt+h",
+        "mac": "cmd+alt+h",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+left",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+right",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+enter",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+g",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+i",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+m",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+o",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "alt+u",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "f1",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "f2",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      }
+    ],
+    "configuration": {
+      "title": "ProjectScaffold",
+      "properties": {
+        "projectScaffold.syncSelection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Move the text cursor to the entity selected in the diagram, and select in the diagram the entity under the text cursor."
+        },
+        "projectScaffold.preview.position": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "enumDescriptions": [
+            "Left of the text",
+            "Right of the text"
+          ],
+          "default": "left",
+          "description": "Where Open Preview to the Side places the diagram."
+        },
+        "projectScaffold.preview.showSideBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Outline, Links, Settings)."
+        }
+      }
+    }
+  }
+}
