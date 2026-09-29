@@ -19,7 +19,9 @@ const APP_COMMANDS: Record<string, string> = {
   'projectScaffold.exportYaml': 'file.exportYaml',
   'projectScaffold.exportJson': 'file.exportJson',
   'projectScaffold.exportPng': 'file.exportPng',
-  'projectScaffold.exportSvg': 'file.exportSvg'
+  'projectScaffold.exportSvg': 'file.exportSvg',
+  'projectScaffold.generate': 'file.generate',
+  'projectScaffold.generateInto': 'file.generateInto'
 }
 
 /** Delay after the last cursor move before the diagram shows what is under it. */

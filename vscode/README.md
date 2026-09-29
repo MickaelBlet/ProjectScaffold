@@ -18,6 +18,9 @@ interfaces and constrained links, exported as YAML/JSON for code skeleton genera
 - Outline: the **Outline** view and breadcrumbs of the text editor.
 - Colors follow the VS Code color theme (app setting Theme: _VS Code_, the default).
 - Export YAML/JSON (for generators, no editor data) and PNG/SVG from the diagram title bar or the command palette.
+- **Generate Code**: C++17 code (built-in LiquidJS templates) in `generated/<project>` next to the file (setting
+  `projectScaffold.generate.outputDir`); **Generate Code Into…** picks another directory, remembered for the file.
+  Code written inside the `// <user:…>` sections is kept when generating again.
 - While a diagram has the focus, its shortcuts win over VS Code's (Ctrl+P, Ctrl+Shift+P, Ctrl+E...): its own
   command palette is Ctrl+Shift+P.
 

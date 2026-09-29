@@ -140,6 +140,17 @@
         "category": "ProjectScaffold"
       },
       {
+        "command": "projectScaffold.generate",
+        "title": "Generate Code",
+        "category": "ProjectScaffold",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "projectScaffold.generateInto",
+        "title": "Generate Code Into…",
+        "category": "ProjectScaffold"
+      },
+      {
         "command": "projectScaffold.noop",
         "title": "Handled by the diagram",
         "category": "ProjectScaffold"
@@ -184,6 +195,14 @@
           "when": "projectScaffold.diagramActive"
         },
         {
+          "command": "projectScaffold.generate",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.generateInto",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
           "command": "projectScaffold.noop",
           "when": "false"
         }
@@ -218,6 +237,16 @@
           "command": "projectScaffold.exportSvg",
           "when": "projectScaffold.diagramActive",
           "group": "export"
+        },
+        {
+          "command": "projectScaffold.generate",
+          "when": "projectScaffold.diagramActive",
+          "group": "generate"
+        },
+        {
+          "command": "projectScaffold.generateInto",
+          "when": "projectScaffold.diagramActive",
+          "group": "generate"
         }
       ],
       "explorer/context": [
@@ -425,6 +454,11 @@
           "type": "boolean",
           "default": true,
           "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Modules, Links, Settings)."
+        },
+        "projectScaffold.generate.outputDir": {
+          "type": "string",
+          "default": "generated/${project}",
+          "markdownDescription": "Directory of the code generated from a project file (_Generate Code_), relative to the file; `${project}` is the project's namespace. _Generate Code Into…_ picks another one, remembered for the file in the workspace."
         }
       }
     }

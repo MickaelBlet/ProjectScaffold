@@ -6,7 +6,16 @@
 import * as vscode from 'vscode'
 import { lineOfPath } from '../../src/renderer/src/model/serialize'
 import { webviewHtml } from './html'
-import type { DiagramAction, SidePanel, ToHost, ToPage, WebviewInit, WebviewMode } from './protocol'
+import type {
+  DiagramAction,
+  OutputDirReply,
+  OutputFileReply,
+  SidePanel,
+  ToHost,
+  ToPage,
+  WebviewInit,
+  WebviewMode
+} from './protocol'
 
 /** Full diagram editor (custom editor). */
 export const VIEW_TYPE = 'projectScaffold.editor'
@@ -211,6 +220,12 @@ export class DiagramSession {
         await reply(msg.id, content)
         return
       }
+      case 'outputDir':
+        await reply(msg.id, await this.sessions.outputDir(this.uri, msg.pick, msg.name))
+        return
+      case 'outputFile':
+        await reply(msg.id, await this.sessions.outputFile(msg.dir, msg.path, msg.op, msg.text))
+        return
       case 'openSibling': {
         // Opened the way this one is: full diagram, or text (its preview is a click away).
         const uri = sibling(this.uri, msg.file)
@@ -258,6 +273,8 @@ export class Sessions implements vscode.Disposable {
   readonly onDidOpen = this.opened.event
   /** Project document of the side panels: of the active diagram, else of the active text editor. */
   private current: vscode.Uri | undefined
+  /** Output directories given to the pages: the only ones they write into. */
+  private readonly outputs = new Set<string>()
   /** View shown by the diagrams of each document (by name, null: global). */
   private readonly views = new Map<string, string | null>()
   private readonly subscriptions = vscode.Disposable.from(
@@ -387,6 +404,61 @@ export class Sessions implements vscode.Disposable {
     const target = diagrams.find((s) => s.active) ?? diagrams[0]
     if (target) void target.post({ type: 'action', action })
     else if (from.uri) void vscode.commands.executeCommand('projectScaffold.showPreview', from.uri)
+  }
+
+  /** Output directory of the code generated from a document (see ToHost `outputDir`). */
+  async outputDir(document: vscode.Uri, pick: boolean, name: string): Promise<OutputDirReply | null> {
+    const key = `outputDir:${document.toString()}`
+    const saved = this.context.workspaceState.get<string>(key)
+    const setting = vscode.workspace
+      .getConfiguration('projectScaffold')
+      .get<string>('generate.outputDir', 'generated/${project}')
+    const configured = sibling(document, setting.replaceAll('${project}', name))
+    let dir = saved ? vscode.Uri.parse(saved) : configured
+    if (pick) {
+      const picked = await vscode.window.showOpenDialog({
+        canSelectFolders: true,
+        canSelectFiles: false,
+        canSelectMany: false,
+        defaultUri: dir,
+        openLabel: 'Generate Here',
+        title: 'Generate code into'
+      })
+      if (!picked?.[0]) return null
+      dir = picked[0]
+      await this.context.workspaceState.update(key, dir.toString())
+    }
+    this.outputs.add(dir.toString())
+    return { dir: dir.toString(), label: vscode.workspace.asRelativePath(dir) }
+  }
+
+  /** Reads, writes or removes a file of an output directory given to a page. */
+  async outputFile(
+    dir: string,
+    path: string,
+    op: 'read' | 'write' | 'remove',
+    text = ''
+  ): Promise<OutputFileReply> {
+    const parts = path.split('/')
+    if (!this.outputs.has(dir) || parts.some((p) => !p || p === '.' || p === '..' || p.includes('\\')))
+      return { error: `'${path}' is not a file of the output directory` }
+    const uri = vscode.Uri.joinPath(vscode.Uri.parse(dir), ...parts)
+    try {
+      switch (op) {
+        case 'read':
+          return { text: new TextDecoder().decode(await vscode.workspace.fs.readFile(uri)) }
+        case 'write':
+          await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(uri, '..'))
+          await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(text))
+          return { text: null }
+        case 'remove':
+          await vscode.workspace.fs.delete(uri, { useTrash: false })
+          return { text: null }
+      }
+    } catch (e) {
+      if (e instanceof vscode.FileSystemError && e.code === 'FileNotFound') return { text: null }
+      return { error: e instanceof Error ? e.message : String(e) }
+    }
   }
 
   private storage(): Record<string, string> {
