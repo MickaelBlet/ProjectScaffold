@@ -8,7 +8,7 @@ interfaces and constrained links, exported as YAML/JSON for code skeleton genera
   (`projectScaffold.preview.showSideBar`). Changes made on either side update the other; undo in the preview
   undoes the diagram's changes.
 - The text cursor and the diagram selection follow each other (setting `projectScaffold.syncSelection`).
-- **ProjectScaffold side bar** (activity bar): the app's Explorer, Outline, Links and Settings for the project
+- **ProjectScaffold side bar** (activity bar): the app's Explorer, Modules, Links and Settings for the project
   file being edited. Selecting an entity there shows it in the diagram and the text; opening a view or an editor
   opens it in the diagram (a preview when none is open).
 - Full-window diagram: **Reopen Editor With… › ProjectScaffold**, or **Open in Full Diagram Editor** from the
