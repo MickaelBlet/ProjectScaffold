@@ -106,7 +106,9 @@ export class DiagramSession {
     /** Document shown; a side panel changes it, and may have none. */
     public uri: vscode.Uri | undefined,
     readonly mode: WebviewMode,
-    private readonly sessions: Sessions
+    private readonly sessions: Sessions,
+    /** Side panel shown (mode `panel`). */
+    readonly sidePanel?: SidePanel
   ) {}
 
   /** A diagram (not a side panel) in the active editor group. */
@@ -156,6 +158,7 @@ export class DiagramSession {
         return this.sessions.store(this, msg.key, msg.value)
       case 'showPanel':
         await vscode.commands.executeCommand(`${sidePanelId(msg.panel)}.focus`)
+        if (msg.dependency !== undefined) this.sessions.showDependency(msg.dependency)
         return
       case 'ready':
         return this.sessions.ready(this)
@@ -277,6 +280,8 @@ export class Sessions implements vscode.Disposable {
   private readonly outputs = new Set<string>()
   /** View shown by the diagrams of each document (by name, null: global). */
   private readonly views = new Map<string, string | null>()
+  /** Dependency to show in a Dependencies panel not ready yet (by name). */
+  private dependency: string | undefined
   private readonly subscriptions = vscode.Disposable.from(
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (!e.contentChanges.length) return
@@ -325,7 +330,7 @@ export class Sessions implements vscode.Disposable {
     mode: WebviewMode,
     sidePanel?: SidePanel
   ): Promise<void> {
-    const session = new DiagramSession(panel, document?.uri, mode, this)
+    const session = new DiagramSession(panel, document?.uri, mode, this, sidePanel)
     this.all.add(session)
     panel.webview.options = { enableScripts: true, localResourceRoots: [this.media] }
     // Text changes one at a time, in order: a save follows the edit before it. The other messages do
@@ -383,6 +388,17 @@ export class Sessions implements vscode.Disposable {
   async ready(panel: DiagramSession): Promise<void> {
     this.follow()
     if (this.current) await panel.show(this.current)
+    if (panel.sidePanel === 'dependencies' && this.dependency !== undefined) {
+      await panel.post({ type: 'dependency', name: this.dependency })
+      this.dependency = undefined
+    }
+  }
+
+  /** Shows a dependency in the Dependencies panels; the next one ready when none is. */
+  showDependency(name: string): void {
+    const panels = [...this.all].filter((s) => s.sidePanel === 'dependencies')
+    if (panels.length) for (const s of panels) void s.post({ type: 'dependency', name })
+    else this.dependency = name
   }
 
   /** A page selected an entity: the other pages of its document show it. */

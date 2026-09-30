@@ -80,6 +80,12 @@
         },
         {
           "type": "webview",
+          "id": "projectScaffold.panel.dependencies",
+          "name": "Dependencies",
+          "visibility": "collapsed"
+        },
+        {
+          "type": "webview",
           "id": "projectScaffold.panel.settings",
           "name": "Settings",
           "visibility": "collapsed"
@@ -453,7 +459,7 @@
         "projectScaffold.preview.showSideBar": {
           "type": "boolean",
           "default": true,
-          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Modules, Links, Settings)."
+          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Modules, Links, Dependencies, Settings)."
         },
         "projectScaffold.generate.outputDir": {
           "type": "string",
