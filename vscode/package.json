@@ -1,5 +1,5 @@
 {
-  "name": "project-scaffold",
+  "name": "project-scaffold-vscode",
   "displayName": "ProjectScaffold",
   "description": "Software architecture editor for *.scaffold.yaml files: modules, ports, typed interfaces and links",
   "version": "0.1.0",

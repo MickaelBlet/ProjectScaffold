@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Build the VS Code extension into dist-vscode/project-scaffold-<version>.vsix (web build included).
-# Install it with: code --install-extension dist-vscode/project-scaffold-<version>.vsix
+# Build the VS Code extension into dist-vscode/project-scaffold-vscode-<version>.vsix (web build included).
+# Install it with: code --install-extension dist-vscode/project-scaffold-vscode-<version>.vsix
 # In Docker instead: docker buildx bake vscode
 set -euo pipefail
 cd "$(dirname "$0")/.."

@@ -134,5 +134,5 @@ Workspace files (`*.scaffold-workspace.yaml`) are not opened by the extension: o
 
 ```sh
 scripts/build_vscode.sh
-code --install-extension dist-vscode/project-scaffold-<version>.vsix
+code --install-extension dist-vscode/project-scaffold-vscode-<version>.vsix
 ```
