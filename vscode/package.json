@@ -3,7 +3,7 @@
   "displayName": "ProjectScaffold",
   "description": "Software architecture editor for *.scaffold.yaml files: modules, ports, typed interfaces and links",
   "version": "0.1.0",
-  "publisher": "mickaelblet",
+  "publisher": "mblet",
   "author": "Mickaël Blet",
   "license": "MIT",
   "private": true,
