@@ -14,6 +14,7 @@ import type {
   SidePanel,
   ToHost,
   ToPage,
+  ViewRef,
   WebviewInit,
   WebviewMode
 } from './protocol'
@@ -355,7 +356,7 @@ export class Sessions implements vscode.Disposable {
   /** Output directories given to the pages: the only ones they write into. */
   private readonly outputs = new Set<string>()
   /** View shown by the diagrams of each document (by name, null: global). */
-  private readonly views = new Map<string, string | null>()
+  private readonly views = new Map<string, ViewRef>()
   /** Dependency to show in a Dependencies panel not ready yet (by name). */
   private dependency: string | undefined
   private readonly subscriptions = vscode.Disposable.from(
@@ -395,7 +396,7 @@ export class Sessions implements vscode.Disposable {
     return undefined
   }
 
-  viewOf(uri: vscode.Uri): string | null | undefined {
+  viewOf(uri: vscode.Uri): ViewRef | undefined {
     return this.views.get(uri.toString())
   }
 
@@ -484,7 +485,7 @@ export class Sessions implements vscode.Disposable {
   }
 
   /** A diagram shows another view: its side panels follow. */
-  viewChanged(from: DiagramSession, view: string | null): void {
+  viewChanged(from: DiagramSession, view: ViewRef): void {
     if (!from.uri) return
     this.views.set(from.uri.toString(), view)
     for (const s of this.all) if (s.mode === 'panel' && s.shows(from.uri)) void s.post({ type: 'view', view })
