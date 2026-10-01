@@ -1,5 +1,5 @@
-// Tool panels of the app (Explorer, Modules, Links, Dependencies, Settings) in the ProjectScaffold side bar, each
-// one a page showing the active project document (see Sessions.follow).
+// Tool panels of the app (Explorer, Modules, Links, Dependencies, Settings) in VS Code's Explorer or
+// the ProjectScaffold side bar, each one a page showing the active project document (see Sessions.follow).
 import type * as vscode from 'vscode'
 import type { SidePanel } from './protocol'
 import type { Sessions } from './session'

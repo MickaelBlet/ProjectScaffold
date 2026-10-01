@@ -29,6 +29,8 @@ export const PROJECT_FILE = /\.scaffold\.(ya?ml|json)$/i
 /** Context keys: a diagram has the keyboard focus (its shortcuts win, see package.json); is active. */
 const FOCUS_CONTEXT = 'projectScaffold.focused'
 const ACTIVE_CONTEXT = 'projectScaffold.diagramActive'
+/** Context key: the window has seen a project file (the views in VS Code's Explorer show then). */
+const PROJECT_CONTEXT = 'projectScaffold.hasProject'
 /** Global state key of the page preferences (settings, panel layout, recent commands). */
 const STORAGE_KEY = 'storage'
 
@@ -310,7 +312,8 @@ export class DiagramSession {
         const uri = sibling(this.uri, msg.file)
         if (this.mode === 'editor' && !/\.idl$/i.test(msg.file))
           await vscode.commands.executeCommand('vscode.openWith', uri, VIEW_TYPE)
-        else await vscode.commands.executeCommand('vscode.open', uri)
+        // 'default': the text editor, though the diagram is the default editor of project files.
+        else await vscode.commands.executeCommand('vscode.openWith', uri, 'default')
         return
       }
     }
@@ -332,8 +335,17 @@ export class DiagramSession {
   }
 }
 
-/** View id of a side panel (see package.json). */
-export const sidePanelId = (panel: SidePanel): string => `projectScaffold.panel.${panel}`
+/** View ids of a side panel: in the ProjectScaffold container, in VS Code's Explorer (see package.json). */
+export const sidePanelIds = (panel: SidePanel): string[] => [
+  `projectScaffold.panel.${panel}`,
+  `projectScaffold.explorer.${panel}`
+]
+
+/** View id of a side panel where the setting projectScaffold.views.location puts it. */
+export function sidePanelId(panel: SidePanel): string {
+  const location = vscode.workspace.getConfiguration('projectScaffold').get<string>('views.location')
+  return sidePanelIds(panel)[location === 'activityBar' ? 0 : 1]!
+}
 
 function documentInit(document: vscode.TextDocument | undefined): Pick<WebviewInit, 'path' | 'uri' | 'text'> {
   if (!document) return { path: '', uri: '', text: '' }
@@ -359,6 +371,10 @@ export class Sessions implements vscode.Disposable {
   private readonly views = new Map<string, ViewRef>()
   /** Dependency to show in a Dependencies panel not ready yet (by name). */
   private dependency: string | undefined
+  /** App commands for the diagram of a document not ready yet (by URI), see runFor. */
+  private readonly pending = new Map<string, string[]>()
+  /** Documents whose opening showed the views already (projectScaffold.views.revealOnOpen). */
+  private readonly revealed = new Set<string>()
   private readonly subscriptions = vscode.Disposable.from(
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (!e.contentChanges.length) return
@@ -369,6 +385,11 @@ export class Sessions implements vscode.Disposable {
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.follow()
+    void vscode.workspace
+      .findFiles('**/*.scaffold.{yaml,yml,json}', '**/node_modules/**', 1)
+      .then((found) => {
+        if (found.length) void vscode.commands.executeCommand('setContext', PROJECT_CONTEXT, true)
+      })
   }
 
   get media(): vscode.Uri {
@@ -444,15 +465,60 @@ export class Sessions implements vscode.Disposable {
 
   /** The side panels show the project document being edited; they keep it while none is. */
   private follow(): void {
-    const editor = vscode.window.activeTextEditor
-    const text =
-      editor && (PROJECT_FILE.test(editor.document.uri.path) || this.has(editor.document))
-        ? editor.document.uri
-        : undefined
-    const next = this.active()?.uri ?? text ?? (this.current ? undefined : this.anyProject())
+    const next = this.active()?.uri ?? this.textProject() ?? (this.current ? undefined : this.anyProject())
     if (!next || next.toString() === this.current?.toString()) return
     this.current = next
     for (const s of this.all) if (s.mode === 'panel') void s.show(next)
+    void this.projectOpened(next)
+  }
+
+  /** Project document of the active text editor. */
+  private textProject(): vscode.Uri | undefined {
+    const editor = vscode.window.activeTextEditor
+    return editor && (PROJECT_FILE.test(editor.document.uri.path) || this.has(editor.document))
+      ? editor.document.uri
+      : undefined
+  }
+
+  /** A project document is being edited: the views show, the first time for it. */
+  private async projectOpened(uri: vscode.Uri): Promise<void> {
+    await vscode.commands.executeCommand('setContext', PROJECT_CONTEXT, true)
+    const key = uri.toString()
+    const reveal = vscode.workspace
+      .getConfiguration('projectScaffold')
+      .get<boolean>('views.revealOnOpen', true)
+    if (!reveal || this.revealed.has(key)) return
+    this.revealed.add(key)
+    await this.revealViews()
+  }
+
+  /** Shows the ProjectScaffold views (unless their Explorer is visible), the focus staying in the editor. */
+  async revealViews(): Promise<void> {
+    await vscode.commands.executeCommand('setContext', PROJECT_CONTEXT, true)
+    const visible = [...this.all].some(
+      (s) => s.sidePanel === 'explorer' && 'visible' in s.panel && s.panel.visible
+    )
+    if (visible) return
+    await vscode.commands.executeCommand(`${sidePanelId('explorer')}.focus`)
+    await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup')
+  }
+
+  /**
+   * Runs an app command in a diagram of a project document (`uri`, else the one being edited): the
+   * active one, else any, else a preview opened for it, which runs it once loaded.
+   */
+  async runFor(uri: vscode.Uri | undefined, command: string): Promise<void> {
+    const target = uri ?? this.active()?.uri ?? this.textProject() ?? this.current
+    if (!target) return
+    const diagrams = [...this.all].filter((s) => s.mode !== 'panel' && s.shows(target))
+    const page = diagrams.find((s) => s.active) ?? diagrams[0]
+    if (page) {
+      await page.post({ type: 'run', command })
+      return
+    }
+    const key = target.toString()
+    this.pending.set(key, [...(this.pending.get(key) ?? []), command])
+    await vscode.commands.executeCommand('projectScaffold.showPreview', target)
   }
 
   /** A project document shown somewhere, for side panels that have none yet. */
@@ -461,8 +527,18 @@ export class Sessions implements vscode.Disposable {
     return text?.document.uri ?? [...this.all].find((s) => s.mode !== 'panel' && s.uri)?.uri
   }
 
-  /** A side panel listens for its document: the current one, whatever it was given before. */
+  /**
+   * A page listens: a diagram for commands (those waiting for it run, see runFor), a side panel for
+   * its document (the current one, whatever it was given before).
+   */
   async ready(panel: DiagramSession): Promise<void> {
+    if (panel.mode !== 'panel') {
+      const key = panel.uri?.toString() ?? ''
+      const commands = this.pending.get(key) ?? []
+      this.pending.delete(key)
+      for (const command of commands) await panel.post({ type: 'run', command })
+      return
+    }
     this.follow()
     if (this.current) await panel.show(this.current)
     if (panel.sidePanel === 'dependencies' && this.dependency !== undefined) {

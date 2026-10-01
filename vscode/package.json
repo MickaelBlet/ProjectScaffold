@@ -48,7 +48,7 @@
             "filenamePattern": "*.scaffold.json"
           }
         ],
-        "priority": "option"
+        "priority": "default"
       }
     ],
     "viewsContainers": {
@@ -65,30 +65,70 @@
         {
           "type": "webview",
           "id": "projectScaffold.panel.explorer",
-          "name": "Explorer"
+          "name": "Explorer",
+          "when": "config.projectScaffold.views.location == 'activityBar'"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.modules",
-          "name": "Modules"
+          "name": "Modules",
+          "when": "config.projectScaffold.views.location == 'activityBar'"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.links",
           "name": "Links",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "config.projectScaffold.views.location == 'activityBar'"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.dependencies",
           "name": "Dependencies",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "config.projectScaffold.views.location == 'activityBar'"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.settings",
           "name": "Settings",
-          "visibility": "collapsed"
+          "visibility": "collapsed",
+          "when": "config.projectScaffold.views.location == 'activityBar'"
+        }
+      ],
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "projectScaffold.explorer.explorer",
+          "name": "ProjectScaffold Explorer",
+          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
+        },
+        {
+          "type": "webview",
+          "id": "projectScaffold.explorer.modules",
+          "name": "ProjectScaffold Modules",
+          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
+        },
+        {
+          "type": "webview",
+          "id": "projectScaffold.explorer.links",
+          "name": "ProjectScaffold Links",
+          "visibility": "collapsed",
+          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
+        },
+        {
+          "type": "webview",
+          "id": "projectScaffold.explorer.dependencies",
+          "name": "ProjectScaffold Dependencies",
+          "visibility": "collapsed",
+          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
+        },
+        {
+          "type": "webview",
+          "id": "projectScaffold.explorer.settings",
+          "name": "ProjectScaffold Settings",
+          "visibility": "collapsed",
+          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
         }
       ]
     },
@@ -207,15 +247,15 @@
         },
         {
           "command": "projectScaffold.generate",
-          "when": "projectScaffold.diagramActive"
+          "when": "projectScaffold.diagramActive || resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
         },
         {
           "command": "projectScaffold.generateInto",
-          "when": "projectScaffold.diagramActive"
+          "when": "projectScaffold.diagramActive || resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
         },
         {
           "command": "projectScaffold.codeTemplates",
-          "when": "projectScaffold.diagramActive"
+          "when": "projectScaffold.diagramActive || resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
         },
         {
           "command": "projectScaffold.noop",
@@ -225,6 +265,11 @@
       "editor/title": [
         {
           "command": "projectScaffold.showPreview",
+          "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/ && activeEditor == 'workbench.editors.files.textFileEditor'",
+          "group": "navigation"
+        },
+        {
+          "command": "projectScaffold.generate",
           "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/ && activeEditor == 'workbench.editors.files.textFileEditor'",
           "group": "navigation"
         },
@@ -274,6 +319,28 @@
           "command": "projectScaffold.openWith",
           "when": "resourceExtname =~ /^\\.(ya?ml|json)$/",
           "group": "navigation"
+        },
+        {
+          "command": "projectScaffold.generate",
+          "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "projectScaffold.generate",
+          "when": "view =~ /^projectScaffold\\.(panel|explorer)\\.explorer$/",
+          "group": "navigation"
+        },
+        {
+          "command": "projectScaffold.generateInto",
+          "when": "view =~ /^projectScaffold\\.(panel|explorer)\\.explorer$/",
+          "group": "generate"
+        },
+        {
+          "command": "projectScaffold.codeTemplates",
+          "when": "view =~ /^projectScaffold\\.(panel|explorer)\\.explorer$/",
+          "group": "generate"
         }
       ]
     },
@@ -457,6 +524,24 @@
           "default": true,
           "description": "Move the text cursor to the entity selected in the diagram, and select in the diagram the entity under the text cursor."
         },
+        "projectScaffold.views.location": {
+          "type": "string",
+          "enum": [
+            "explorer",
+            "activityBar"
+          ],
+          "enumDescriptions": [
+            "In VS Code's Explorer, below the files",
+            "In the ProjectScaffold container of the activity bar"
+          ],
+          "default": "explorer",
+          "description": "Where the Explorer, Modules, Links, Dependencies and Settings views of ProjectScaffold are."
+        },
+        "projectScaffold.views.revealOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the ProjectScaffold views when a project file is first opened in the window."
+        },
         "projectScaffold.preview.position": {
           "type": "string",
           "enum": [
@@ -473,7 +558,7 @@
         "projectScaffold.preview.showSideBar": {
           "type": "boolean",
           "default": true,
-          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Modules, Links, Dependencies, Settings)."
+          "description": "Opening a preview shows the ProjectScaffold views (Explorer, Modules, Links, Dependencies, Settings)."
         },
         "projectScaffold.generate.outputDir": {
           "type": "string",

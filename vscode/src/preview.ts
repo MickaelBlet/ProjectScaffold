@@ -1,6 +1,6 @@
 // Diagram preview beside the text of a project file (like the Markdown preview), editable: its
 // changes are written to the text. One per document, on the left or the right of the text (setting
-// projectScaffold.preview.position); opening it shows the ProjectScaffold side bar
+// projectScaffold.preview.position); opening it shows the ProjectScaffold views
 // (projectScaffold.preview.showSideBar). Restored after a window reload.
 import * as vscode from 'vscode'
 import { PREVIEW_TYPE, type Sessions } from './session'
@@ -21,11 +21,8 @@ export class Previews implements vscode.WebviewPanelSerializer {
       await this.restore(this.create(uri, vscode.ViewColumn.Active), uri)
       await vscode.commands.executeCommand('workbench.action.focusRightGroup')
     } else await this.restore(this.create(uri, vscode.ViewColumn.Beside), uri)
-    if (config.get('showSideBar', true)) {
-      await vscode.commands.executeCommand('workbench.view.extension.projectScaffold')
-      // Typing goes on in the text.
-      await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup')
-    }
+    // Typing goes on in the text.
+    if (config.get('showSideBar', true)) await this.sessions.revealViews()
   }
 
   private create(uri: vscode.Uri, viewColumn: vscode.ViewColumn): vscode.WebviewPanel {

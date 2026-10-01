@@ -1,8 +1,8 @@
-// ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open as text, with an
-// editable diagram preview beside them (or the full diagram editor through "Reopen Editor With…");
-// the text cursor and the diagram selection follow each other. The app's Explorer, Modules, Links
-// and Settings are in the ProjectScaffold side bar. Problems go to the Problems panel, the outline
-// of the text to the Outline view.
+// ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open in the full diagram
+// editor, or as text with an editable diagram preview beside them; the text cursor and the diagram
+// selection follow each other. The app's Explorer, Modules, Links and Settings are views in VS Code's
+// Explorer (or the ProjectScaffold side bar). Problems go to the Problems panel, the outline of the
+// text to the Outline view.
 import * as vscode from 'vscode'
 import { structureAt } from '../../src/renderer/src/components/completion'
 import { ScaffoldEditorProvider } from './editor'
@@ -10,7 +10,7 @@ import { symbolProvider } from './outline'
 import { Previews } from './preview'
 import { Problems } from './problems'
 import { SIDE_PANELS, SidePanelProvider } from './sidebar'
-import { PREVIEW_TYPE, PROJECT_FILE, Sessions, VIEW_TYPE, sidePanelId, syncSelection } from './session'
+import { PREVIEW_TYPE, PROJECT_FILE, Sessions, VIEW_TYPE, sidePanelIds, syncSelection } from './session'
 
 /** VS Code commands running an app command in the active diagram. */
 const APP_COMMANDS: Record<string, string> = {
@@ -19,7 +19,12 @@ const APP_COMMANDS: Record<string, string> = {
   'projectScaffold.exportYaml': 'file.exportYaml',
   'projectScaffold.exportJson': 'file.exportJson',
   'projectScaffold.exportPng': 'file.exportPng',
-  'projectScaffold.exportSvg': 'file.exportSvg',
+  'projectScaffold.exportSvg': 'file.exportSvg'
+}
+
+/** VS Code commands running an app command for a project document (menus give its URI), in a diagram
+ *  opened for it when none is (see Sessions.runFor). */
+const DOCUMENT_COMMANDS: Record<string, string> = {
   'projectScaffold.generate': 'file.generate',
   'projectScaffold.generateInto': 'file.generateInto',
   'projectScaffold.codeTemplates': 'file.codeTemplates'
@@ -71,10 +76,13 @@ export function activate(context: vscode.ExtensionContext): void {
       supportsMultipleEditorsPerDocument: false
     }),
     vscode.window.registerWebviewPanelSerializer(PREVIEW_TYPE, previews),
-    ...SIDE_PANELS.map((panel) =>
-      vscode.window.registerWebviewViewProvider(sidePanelId(panel), new SidePanelProvider(sessions, panel), {
-        webviewOptions: { retainContextWhenHidden: true }
-      })
+    // Each panel in the ProjectScaffold container and in VS Code's Explorer (projectScaffold.views.location).
+    ...SIDE_PANELS.flatMap((panel) =>
+      sidePanelIds(panel).map((id) =>
+        vscode.window.registerWebviewViewProvider(id, new SidePanelProvider(sessions, panel), {
+          webviewOptions: { retainContextWhenHidden: true }
+        })
+      )
     ),
     vscode.languages.registerDocumentSymbolProvider(
       { pattern: '**/*.scaffold.{yaml,yml,json}' },
@@ -82,6 +90,11 @@ export function activate(context: vscode.ExtensionContext): void {
     ),
     ...Object.entries(APP_COMMANDS).map(([id, command]) =>
       vscode.commands.registerCommand(id, () => run(command))
+    ),
+    ...Object.entries(DOCUMENT_COMMANDS).map(([id, command]) =>
+      vscode.commands.registerCommand(id, (uri?: unknown) =>
+        sessions.runFor(uri instanceof vscode.Uri ? uri : undefined, command)
+      )
     ),
     // From the text editor title (uri given) or the palette (active text editor).
     vscode.commands.registerCommand('projectScaffold.showPreview', (uri?: vscode.Uri) => {
