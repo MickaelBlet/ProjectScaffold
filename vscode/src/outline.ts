@@ -8,6 +8,7 @@ const SYMBOL_KINDS: Record<OutlineKind, vscode.SymbolKind> = {
   struct: vscode.SymbolKind.Struct,
   enum: vscode.SymbolKind.Enum,
   bitmask: vscode.SymbolKind.Enum,
+  union: vscode.SymbolKind.Struct,
   alias: vscode.SymbolKind.TypeParameter,
   primitive: vscode.SymbolKind.TypeParameter,
   field: vscode.SymbolKind.Field,
