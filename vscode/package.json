@@ -157,6 +157,11 @@
         "category": "ProjectScaffold"
       },
       {
+        "command": "projectScaffold.codeTemplates",
+        "title": "Code Templates…",
+        "category": "ProjectScaffold"
+      },
+      {
         "command": "projectScaffold.noop",
         "title": "Handled by the diagram",
         "category": "ProjectScaffold"
@@ -209,6 +214,10 @@
           "when": "projectScaffold.diagramActive"
         },
         {
+          "command": "projectScaffold.codeTemplates",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
           "command": "projectScaffold.noop",
           "when": "false"
         }
@@ -251,6 +260,11 @@
         },
         {
           "command": "projectScaffold.generateInto",
+          "when": "projectScaffold.diagramActive",
+          "group": "generate"
+        },
+        {
+          "command": "projectScaffold.codeTemplates",
           "when": "projectScaffold.diagramActive",
           "group": "generate"
         }
@@ -465,6 +479,11 @@
           "type": "string",
           "default": "generated/${project}",
           "markdownDescription": "Directory of the code generated from a project file (_Generate Code_), relative to the file; `${project}` is the project's namespace. _Generate Code Into…_ picks another one, remembered for the file in the workspace."
+        },
+        "projectScaffold.generate.templates": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Template folder of the code generated from a project file, relative to the file (a `manifest.yaml` and its templates); empty: the output directory's `.scaffold/templates`, else the built-in C++17 templates. _Code Templates…_ picks another one, remembered for the file in the workspace."
         }
       }
     }

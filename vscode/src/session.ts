@@ -298,6 +298,9 @@ export class DiagramSession {
       case 'outputDir':
         await reply(msg.id, await this.sessions.outputDir(this.uri, msg.pick, msg.name))
         return
+      case 'templateDir':
+        await reply(msg.id, await this.sessions.templateDir(this.uri, msg.op))
+        return
       case 'outputFile':
         await reply(msg.id, await this.sessions.outputFile(msg.dir, msg.path, msg.op, msg.text))
         return
@@ -517,6 +520,34 @@ export class Sessions implements vscode.Disposable {
       dir = picked[0]
       await this.context.workspaceState.update(key, dir.toString())
     }
+    this.outputs.add(dir.toString())
+    return { dir: dir.toString(), label: vscode.workspace.asRelativePath(dir) }
+  }
+
+  /** Template folder of the code generated from a document (see ToHost `templateDir`). */
+  async templateDir(document: vscode.Uri, op: 'current' | 'pick' | 'forget'): Promise<OutputDirReply | null> {
+    const key = `templateDir:${document.toString()}`
+    if (op === 'forget') {
+      await this.context.workspaceState.update(key, undefined)
+      return null
+    }
+    const saved = this.context.workspaceState.get<string>(key)
+    const setting = vscode.workspace.getConfiguration('projectScaffold').get<string>('generate.templates', '')
+    let dir = saved ? vscode.Uri.parse(saved) : setting ? sibling(document, setting) : null
+    if (op === 'pick') {
+      const picked = await vscode.window.showOpenDialog({
+        canSelectFolders: true,
+        canSelectFiles: false,
+        canSelectMany: false,
+        defaultUri: dir ?? vscode.Uri.joinPath(document, '..'),
+        openLabel: 'Use Templates',
+        title: 'Template folder of the code generation'
+      })
+      if (!picked?.[0]) return null
+      dir = picked[0]
+      await this.context.workspaceState.update(key, dir.toString())
+    }
+    if (!dir) return null
     this.outputs.add(dir.toString())
     return { dir: dir.toString(), label: vscode.workspace.asRelativePath(dir) }
   }

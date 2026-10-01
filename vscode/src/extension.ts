@@ -21,7 +21,8 @@ const APP_COMMANDS: Record<string, string> = {
   'projectScaffold.exportPng': 'file.exportPng',
   'projectScaffold.exportSvg': 'file.exportSvg',
   'projectScaffold.generate': 'file.generate',
-  'projectScaffold.generateInto': 'file.generateInto'
+  'projectScaffold.generateInto': 'file.generateInto',
+  'projectScaffold.codeTemplates': 'file.codeTemplates'
 }
 
 /** Delay after the last cursor move before the diagram shows what is under it. */
