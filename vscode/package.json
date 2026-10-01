@@ -65,70 +65,30 @@
         {
           "type": "webview",
           "id": "projectScaffold.panel.explorer",
-          "name": "Explorer",
-          "when": "config.projectScaffold.views.location == 'activityBar'"
+          "name": "Explorer"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.modules",
-          "name": "Modules",
-          "when": "config.projectScaffold.views.location == 'activityBar'"
+          "name": "Modules"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.links",
           "name": "Links",
-          "visibility": "collapsed",
-          "when": "config.projectScaffold.views.location == 'activityBar'"
+          "visibility": "collapsed"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.dependencies",
           "name": "Dependencies",
-          "visibility": "collapsed",
-          "when": "config.projectScaffold.views.location == 'activityBar'"
+          "visibility": "collapsed"
         },
         {
           "type": "webview",
           "id": "projectScaffold.panel.settings",
           "name": "Settings",
-          "visibility": "collapsed",
-          "when": "config.projectScaffold.views.location == 'activityBar'"
-        }
-      ],
-      "explorer": [
-        {
-          "type": "webview",
-          "id": "projectScaffold.explorer.explorer",
-          "name": "ProjectScaffold Explorer",
-          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.explorer.modules",
-          "name": "ProjectScaffold Modules",
-          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.explorer.links",
-          "name": "ProjectScaffold Links",
-          "visibility": "collapsed",
-          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.explorer.dependencies",
-          "name": "ProjectScaffold Dependencies",
-          "visibility": "collapsed",
-          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.explorer.settings",
-          "name": "ProjectScaffold Settings",
-          "visibility": "collapsed",
-          "when": "config.projectScaffold.views.location == 'explorer' && projectScaffold.hasProject"
+          "visibility": "collapsed"
         }
       ]
     },
@@ -349,22 +309,22 @@
       "view/title": [
         {
           "command": "projectScaffold.generate",
-          "when": "view =~ /^projectScaffold\\.(panel|explorer)\\.explorer$/",
+          "when": "view == projectScaffold.panel.explorer",
           "group": "navigation@1"
         },
         {
           "command": "projectScaffold.definitions",
-          "when": "view =~ /^projectScaffold\\.(panel|explorer)\\.explorer$/",
+          "when": "view == projectScaffold.panel.explorer",
           "group": "navigation@2"
         },
         {
           "command": "projectScaffold.generateInto",
-          "when": "view =~ /^projectScaffold\\.(panel|explorer)\\.explorer$/",
+          "when": "view == projectScaffold.panel.explorer",
           "group": "generate"
         },
         {
           "command": "projectScaffold.codeTemplates",
-          "when": "view =~ /^projectScaffold\\.(panel|explorer)\\.explorer$/",
+          "when": "view == projectScaffold.panel.explorer",
           "group": "generate"
         }
       ]
@@ -553,19 +513,6 @@
           "type": "boolean",
           "default": true,
           "description": "Move the text cursor to the entity selected in the diagram, and select in the diagram the entity under the text cursor."
-        },
-        "projectScaffold.views.location": {
-          "type": "string",
-          "enum": [
-            "explorer",
-            "activityBar"
-          ],
-          "enumDescriptions": [
-            "In VS Code's Explorer, below the files",
-            "In the ProjectScaffold container of the activity bar"
-          ],
-          "default": "explorer",
-          "description": "Where the Explorer, Modules, Links, Dependencies and Settings views of ProjectScaffold are."
         },
         "projectScaffold.views.revealOnOpen": {
           "type": "boolean",

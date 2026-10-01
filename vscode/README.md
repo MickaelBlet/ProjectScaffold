@@ -65,7 +65,7 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 | --------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | Text + preview        | **Open Preview** (Ctrl+K V) on a project file                                                         | Editing text and diagram together        |
 | Full diagram editor   | **Reopen Editor With… › ProjectScaffold**, or **Open in Full Diagram Editor** (explorer context menu) | Diagram only, any YAML/JSON project file |
-| ProjectScaffold panel | Activity bar icon (opened with the preview, `projectScaffold.preview.showSideBar`)                    | Browsing modules, links, dependencies    |
+| ProjectScaffold panel | Activity bar icon (opened with the first project file and with the preview)                           | Browsing modules, links, dependencies    |
 
 - Changes made on either side update the other; undo in the preview undoes the diagram's changes.
 - Selecting an entity in the side bar shows it in the diagram and the text; opening a view or an editor opens it
@@ -115,6 +115,7 @@ All under **ProjectScaffold:** in the command palette.
 | ------------------------------------- | ---------------------- | ----------------------------------------------------------- |
 | `projectScaffold.syncSelection`       | `true`                 | Text cursor and diagram selection follow each other         |
 | `projectScaffold.preview.position`    | `left`                 | Side of the text where the preview opens (`left` / `right`) |
+| `projectScaffold.views.revealOnOpen`  | `true`                 | Opening a project file shows the ProjectScaffold side bar   |
 | `projectScaffold.preview.showSideBar` | `true`                 | Opening a preview shows the ProjectScaffold side bar        |
 | `projectScaffold.generate.outputDir`  | `generated/${project}` | Output of _Generate Code_, relative to the file             |
 

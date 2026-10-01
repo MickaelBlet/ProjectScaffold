@@ -29,8 +29,6 @@ export const PROJECT_FILE = /\.scaffold\.(ya?ml|json)$/i
 /** Context keys: a diagram has the keyboard focus (its shortcuts win, see package.json); is active. */
 const FOCUS_CONTEXT = 'projectScaffold.focused'
 const ACTIVE_CONTEXT = 'projectScaffold.diagramActive'
-/** Context key: the window has seen a project file (the views in VS Code's Explorer show then). */
-const PROJECT_CONTEXT = 'projectScaffold.hasProject'
 /** Global state key of the page preferences (settings, panel layout, recent commands). */
 const STORAGE_KEY = 'storage'
 
@@ -335,17 +333,8 @@ export class DiagramSession {
   }
 }
 
-/** View ids of a side panel: in the ProjectScaffold container, in VS Code's Explorer (see package.json). */
-export const sidePanelIds = (panel: SidePanel): string[] => [
-  `projectScaffold.panel.${panel}`,
-  `projectScaffold.explorer.${panel}`
-]
-
-/** View id of a side panel where the setting projectScaffold.views.location puts it. */
-export function sidePanelId(panel: SidePanel): string {
-  const location = vscode.workspace.getConfiguration('projectScaffold').get<string>('views.location')
-  return sidePanelIds(panel)[location === 'activityBar' ? 0 : 1]!
-}
+/** View id of a side panel in the ProjectScaffold container (see package.json). */
+export const sidePanelId = (panel: SidePanel): string => `projectScaffold.panel.${panel}`
 
 function documentInit(document: vscode.TextDocument | undefined): Pick<WebviewInit, 'path' | 'uri' | 'text'> {
   if (!document) return { path: '', uri: '', text: '' }
@@ -385,11 +374,6 @@ export class Sessions implements vscode.Disposable {
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.follow()
-    void vscode.workspace
-      .findFiles('**/*.scaffold.{yaml,yml,json}', '**/node_modules/**', 1)
-      .then((found) => {
-        if (found.length) void vscode.commands.executeCommand('setContext', PROJECT_CONTEXT, true)
-      })
   }
 
   get media(): vscode.Uri {
@@ -482,7 +466,6 @@ export class Sessions implements vscode.Disposable {
 
   /** A project document is being edited: the views show, the first time for it. */
   private async projectOpened(uri: vscode.Uri): Promise<void> {
-    await vscode.commands.executeCommand('setContext', PROJECT_CONTEXT, true)
     const key = uri.toString()
     const reveal = vscode.workspace
       .getConfiguration('projectScaffold')
@@ -492,9 +475,8 @@ export class Sessions implements vscode.Disposable {
     await this.revealViews()
   }
 
-  /** Shows the ProjectScaffold views (unless their Explorer is visible), the focus staying in the editor. */
+  /** Opens the ProjectScaffold container (unless its Explorer is visible), the focus staying in the editor. */
   async revealViews(): Promise<void> {
-    await vscode.commands.executeCommand('setContext', PROJECT_CONTEXT, true)
     const visible = [...this.all].some(
       (s) => s.sidePanel === 'explorer' && 'visible' in s.panel && s.panel.visible
     )

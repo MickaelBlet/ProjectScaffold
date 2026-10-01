@@ -1,7 +1,7 @@
 // ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open in the full diagram
 // editor, or as text with an editable diagram preview beside them; the text cursor and the diagram
-// selection follow each other. The app's Explorer, Modules, Links and Settings are views in VS Code's
-// Explorer (or the ProjectScaffold side bar). Problems go to the Problems panel, the outline of the
+// selection follow each other. The app's Explorer, Modules, Links, Dependencies and Settings are views
+// of the ProjectScaffold container, opened with the first project file. Problems go to the Problems panel, the outline of the
 // text to the Outline view.
 import * as vscode from 'vscode'
 import { structureAt } from '../../src/renderer/src/components/completion'
@@ -10,7 +10,7 @@ import { symbolProvider } from './outline'
 import { Previews } from './preview'
 import { Problems } from './problems'
 import { SIDE_PANELS, SidePanelProvider } from './sidebar'
-import { PREVIEW_TYPE, PROJECT_FILE, Sessions, VIEW_TYPE, sidePanelIds, syncSelection } from './session'
+import { PREVIEW_TYPE, PROJECT_FILE, Sessions, VIEW_TYPE, sidePanelId, syncSelection } from './session'
 
 /** VS Code commands running an app command in the active diagram. */
 const APP_COMMANDS: Record<string, string> = {
@@ -77,13 +77,11 @@ export function activate(context: vscode.ExtensionContext): void {
       supportsMultipleEditorsPerDocument: false
     }),
     vscode.window.registerWebviewPanelSerializer(PREVIEW_TYPE, previews),
-    // Each panel in the ProjectScaffold container and in VS Code's Explorer (projectScaffold.views.location).
-    ...SIDE_PANELS.flatMap((panel) =>
-      sidePanelIds(panel).map((id) =>
-        vscode.window.registerWebviewViewProvider(id, new SidePanelProvider(sessions, panel), {
-          webviewOptions: { retainContextWhenHidden: true }
-        })
-      )
+    // Each panel in the ProjectScaffold container.
+    ...SIDE_PANELS.map((panel) =>
+      vscode.window.registerWebviewViewProvider(sidePanelId(panel), new SidePanelProvider(sessions, panel), {
+        webviewOptions: { retainContextWhenHidden: true }
+      })
     ),
     vscode.languages.registerDocumentSymbolProvider(
       { pattern: '**/*.scaffold.{yaml,yml,json}' },
