@@ -371,8 +371,8 @@ export class Sessions implements vscode.Disposable {
   private readonly views = new Map<string, ViewRef>()
   /** Dependency to show in a Dependencies panel not ready yet (by name). */
   private dependency: string | undefined
-  /** App commands for the diagram of a document not ready yet (by URI), see runFor. */
-  private readonly pending = new Map<string, string[]>()
+  /** Messages for the diagram of a document not ready yet (by URI), see toDiagram. */
+  private readonly pending = new Map<string, ToPage[]>()
   /** Documents whose opening showed the views already (projectScaffold.views.revealOnOpen). */
   private readonly revealed = new Set<string>()
   private readonly subscriptions = vscode.Disposable.from(
@@ -503,21 +503,22 @@ export class Sessions implements vscode.Disposable {
     await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup')
   }
 
-  /**
-   * Runs an app command in a diagram of a project document (`uri`, else the one being edited): the
-   * active one, else any, else a preview opened for it, which runs it once loaded.
-   */
+  /** Runs an app command in a diagram of a project document (`uri`, else the one being edited). */
   async runFor(uri: vscode.Uri | undefined, command: string): Promise<void> {
     const target = uri ?? this.active()?.uri ?? this.textProject() ?? this.current
-    if (!target) return
+    if (target) await this.toDiagram(target, { type: 'run', command })
+  }
+
+  /** Sends to a diagram of a document: the active one, else any, else a preview opened for it, once loaded. */
+  private async toDiagram(target: vscode.Uri, message: ToPage): Promise<void> {
     const diagrams = [...this.all].filter((s) => s.mode !== 'panel' && s.shows(target))
     const page = diagrams.find((s) => s.active) ?? diagrams[0]
     if (page) {
-      await page.post({ type: 'run', command })
+      await page.post(message)
       return
     }
     const key = target.toString()
-    this.pending.set(key, [...(this.pending.get(key) ?? []), command])
+    this.pending.set(key, [...(this.pending.get(key) ?? []), message])
     await vscode.commands.executeCommand('projectScaffold.showPreview', target)
   }
 
@@ -528,15 +529,15 @@ export class Sessions implements vscode.Disposable {
   }
 
   /**
-   * A page listens: a diagram for commands (those waiting for it run, see runFor), a side panel for
+   * A page listens: a diagram for commands (those waiting for it run, see toDiagram), a side panel for
    * its document (the current one, whatever it was given before).
    */
   async ready(panel: DiagramSession): Promise<void> {
     if (panel.mode !== 'panel') {
       const key = panel.uri?.toString() ?? ''
-      const commands = this.pending.get(key) ?? []
+      const messages = this.pending.get(key) ?? []
       this.pending.delete(key)
-      for (const command of commands) await panel.post({ type: 'run', command })
+      for (const message of messages) await panel.post(message)
       return
     }
     this.follow()
@@ -569,10 +570,7 @@ export class Sessions implements vscode.Disposable {
 
   /** A side panel asks a diagram of its document for an action: the active one, else any, else a new preview. */
   inDiagram(from: DiagramSession, action: DiagramAction): void {
-    const diagrams = [...this.all].filter((s) => s.mode !== 'panel' && s.shows(from.uri))
-    const target = diagrams.find((s) => s.active) ?? diagrams[0]
-    if (target) void target.post({ type: 'action', action })
-    else if (from.uri) void vscode.commands.executeCommand('projectScaffold.showPreview', from.uri)
+    if (from.uri) void this.toDiagram(from.uri, { type: 'action', action })
   }
 
   /** Output directory of the code generated from a document (see ToHost `outputDir`). */
