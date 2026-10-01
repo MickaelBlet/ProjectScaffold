@@ -3,6 +3,7 @@
 // project document. The TextDocument is the source of truth: the page sends the new text after each
 // change of the project, and changes of the text made elsewhere (text editor, undo, file on disk,
 // another page) are sent to the page. Selections go from page to page by data path of the file.
+import { isAbsolute } from 'node:path'
 import * as vscode from 'vscode'
 import { lineOfPath } from '../../src/renderer/src/model/serialize'
 import { webviewHtml } from './html'
@@ -211,6 +212,34 @@ export class DiagramSession {
         const uri = await pickProjectFile(this.uri)
         const content = uri ? new TextDecoder().decode(await vscode.workspace.fs.readFile(uri)) : null
         await reply(msg.id, uri && content !== null ? { path: uri.fsPath, content } : null)
+        return
+      }
+      case 'openFiles': {
+        const uris =
+          (await vscode.window.showOpenDialog({
+            defaultUri: sibling(this.uri, '.'),
+            canSelectMany: true,
+            filters: { [msg.filter.description]: msg.filter.extensions },
+            title: msg.filter.description
+          })) ?? []
+        const files = []
+        for (const uri of uris)
+          files.push({
+            path: uri.fsPath,
+            content: new TextDecoder().decode(await vscode.workspace.fs.readFile(uri))
+          })
+        await reply(msg.id, files)
+        return
+      }
+      case 'readFile': {
+        let content: string | null = null
+        try {
+          if (isAbsolute(msg.path))
+            content = new TextDecoder().decode(await vscode.workspace.fs.readFile(vscode.Uri.file(msg.path)))
+        } catch {
+          // Missing or unreadable: the page tells.
+        }
+        await reply(msg.id, content)
         return
       }
       case 'readSibling': {
