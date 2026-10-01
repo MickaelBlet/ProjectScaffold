@@ -90,6 +90,55 @@ async function pickProjectFile(current: vscode.Uri): Promise<vscode.Uri | undefi
   return uri
 }
 
+/** Workspace files with these extensions (but `current`; project files: `*.scaffold.*`), several at
+ *  once; Browse… adds files through the open dialog. */
+async function pickFiles(
+  current: vscode.Uri,
+  filter: { description: string; extensions: string[] }
+): Promise<vscode.Uri[]> {
+  const project = ['yaml', 'yml', 'json']
+  const others = filter.extensions.filter((e) => !project.includes(e))
+  const globs = [
+    ...(filter.extensions.some((e) => project.includes(e)) ? ['**/*.scaffold.{yaml,yml,json}'] : []),
+    ...others.map((e) => `**/*.${e}`)
+  ]
+  const found = (
+    await Promise.all(globs.map((g) => vscode.workspace.findFiles(g, '**/node_modules/**')))
+  ).flat()
+  const browse = { label: '$(folder-opened) Browse…', description: filter.description }
+  const items: (vscode.QuickPickItem & { uri?: vscode.Uri })[] = found
+    .filter((uri) => uri.toString() !== current.toString())
+    .map((uri) => ({
+      label: uri.path.split('/').pop() ?? uri.path,
+      description: vscode.workspace.asRelativePath(vscode.Uri.joinPath(uri, '..')),
+      uri
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+  if (!items.length) return (await browseFiles(current, filter)) ?? []
+  const picked = await vscode.window.showQuickPick([...items, browse], {
+    title: filter.description,
+    placeHolder: 'Files to read',
+    matchOnDescription: true,
+    ignoreFocusOut: true,
+    canPickMany: true
+  })
+  if (!picked) return []
+  const uris = picked.flatMap((p) => ('uri' in p && p.uri ? [p.uri] : []))
+  if (picked.includes(browse)) uris.push(...((await browseFiles(current, filter)) ?? []))
+  return uris
+}
+
+const browseFiles = (
+  current: vscode.Uri,
+  filter: { description: string; extensions: string[] }
+): Thenable<vscode.Uri[] | undefined> =>
+  vscode.window.showOpenDialog({
+    defaultUri: sibling(current, '.'),
+    canSelectMany: true,
+    filters: { [filter.description]: filter.extensions },
+    title: filter.description
+  })
+
 const EXPORT_FILTERS: Record<string, Record<string, string[]>> = {
   yaml: { YAML: ['yaml', 'yml'] },
   yml: { YAML: ['yaml', 'yml'] },
@@ -215,13 +264,7 @@ export class DiagramSession {
         return
       }
       case 'openFiles': {
-        const uris =
-          (await vscode.window.showOpenDialog({
-            defaultUri: sibling(this.uri, '.'),
-            canSelectMany: true,
-            filters: { [msg.filter.description]: msg.filter.extensions },
-            title: msg.filter.description
-          })) ?? []
+        const uris = await pickFiles(this.uri, msg.filter)
         const files = []
         for (const uri of uris)
           files.push({
@@ -261,7 +304,8 @@ export class DiagramSession {
       case 'openSibling': {
         // Opened the way this one is: full diagram, or text (its preview is a click away).
         const uri = sibling(this.uri, msg.file)
-        if (this.mode === 'editor') await vscode.commands.executeCommand('vscode.openWith', uri, VIEW_TYPE)
+        if (this.mode === 'editor' && !/\.idl$/i.test(msg.file))
+          await vscode.commands.executeCommand('vscode.openWith', uri, VIEW_TYPE)
         else await vscode.commands.executeCommand('vscode.open', uri)
         return
       }
