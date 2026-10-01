@@ -14,6 +14,7 @@ const SYMBOL_KINDS: Record<OutlineKind, vscode.SymbolKind> = {
   field: vscode.SymbolKind.Field,
   value: vscode.SymbolKind.EnumMember,
   interface: vscode.SymbolKind.Interface,
+  constant: vscode.SymbolKind.Constant,
   message: vscode.SymbolKind.Method,
   module: vscode.SymbolKind.Module,
   attribute: vscode.SymbolKind.Field,
