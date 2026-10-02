@@ -162,12 +162,6 @@
         "category": "ProjectScaffold"
       },
       {
-        "command": "projectScaffold.definitions",
-        "title": "Open Definitions View",
-        "category": "ProjectScaffold",
-        "icon": "$(symbol-structure)"
-      },
-      {
         "command": "projectScaffold.noop",
         "title": "Handled by the diagram",
         "category": "ProjectScaffold"
@@ -224,10 +218,6 @@
           "when": "projectScaffold.diagramActive || resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
         },
         {
-          "command": "projectScaffold.definitions",
-          "when": "projectScaffold.diagramActive || resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
-        },
-        {
           "command": "projectScaffold.noop",
           "when": "false"
         }
@@ -240,11 +230,6 @@
         },
         {
           "command": "projectScaffold.generate",
-          "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/ && activeEditor == 'workbench.editors.files.textFileEditor'",
-          "group": "navigation"
-        },
-        {
-          "command": "projectScaffold.definitions",
           "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/ && activeEditor == 'workbench.editors.files.textFileEditor'",
           "group": "navigation"
         },
@@ -279,11 +264,6 @@
           "group": "navigation@4"
         },
         {
-          "command": "projectScaffold.definitions",
-          "when": "projectScaffold.diagramActive",
-          "group": "navigation@5"
-        },
-        {
           "command": "projectScaffold.generateInto",
           "when": "projectScaffold.diagramActive",
           "group": "generate"
@@ -311,11 +291,6 @@
           "command": "projectScaffold.generate",
           "when": "view == projectScaffold.panel.explorer",
           "group": "navigation@1"
-        },
-        {
-          "command": "projectScaffold.definitions",
-          "when": "view == projectScaffold.panel.explorer",
-          "group": "navigation@2"
         },
         {
           "command": "projectScaffold.generateInto",
@@ -482,11 +457,6 @@
       },
       {
         "key": "alt+o",
-        "command": "projectScaffold.noop",
-        "when": "projectScaffold.focused"
-      },
-      {
-        "key": "alt+t",
         "command": "projectScaffold.noop",
         "when": "projectScaffold.focused"
       },

@@ -27,8 +27,7 @@ const APP_COMMANDS: Record<string, string> = {
 const DOCUMENT_COMMANDS: Record<string, string> = {
   'projectScaffold.generate': 'file.generate',
   'projectScaffold.generateInto': 'file.generateInto',
-  'projectScaffold.codeTemplates': 'file.codeTemplates',
-  'projectScaffold.definitions': 'view.definitions'
+  'projectScaffold.codeTemplates': 'file.codeTemplates'
 }
 
 /** Delay after the last cursor move before the diagram shows what is under it. */
