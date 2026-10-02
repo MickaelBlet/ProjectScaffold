@@ -1,9 +1,9 @@
-# C++20 template set of ProjectScaffold: `npm run generate -- <project file> -o <dir>`.
+# C++14 template set of ProjectScaffold: `npm run generate -- <project file> -o <dir>`.
 # Everything C++ lives in these files: the `_*.liquid` partials spell types, values, names, paths
 # and includes; edit them freely. Paths, `each` and `when` are Liquid; templates see the generation
 # context (see README, "Writing templates").
-name: cpp20
-description: C++20 skeleton - types, interfaces, modules wired through their ports, CMake project; links between binaries over generated transports, with Python peers
+name: cpp14
+description: C++14 skeleton - types, interfaces, modules wired through their ports, CMake project; links between binaries over generated transports, with Python peers
 comment: '//'
 # Names of the model that are C++ keywords (separated by spaces) are warned about, and renamed by
 # _id / _accessor / _member.
@@ -14,8 +14,7 @@ reserved: >-
   new noexcept not not_eq nullptr operator or or_eq private protected public register
   reinterpret_cast return short signed sizeof static static_assert static_cast struct switch
   template this thread_local throw true try typedef typeid typename union unsigned using virtual
-  void volatile wchar_t while xor xor_eq char8_t concept consteval constinit co_await co_return co_yield
-  requires
+  void volatile wchar_t while xor xor_eq
 partials:
   - _banner.liquid
   - _connection.liquid
@@ -25,6 +24,8 @@ partials:
   - _member.liquid
   - _name.liquid
   - _ns.liquid
+  - _namespace_open.liquid
+  - _namespace_close.liquid
   - _qualified.liquid
   - _header.liquid
   - _source.liquid
@@ -61,6 +62,9 @@ outputs:
   - template: type.hpp.liquid
     each: types
     path: "include/{% render '_header', e: item %}"
+  # std::optional before C++17, the same in every project (scaffold::Optional).
+  - template: optional.hpp.liquid
+    path: include/scaffold/optional.hpp
   - template: types.hpp.liquid
     path: include/{{ project.ident | snake }}/types.hpp
     when: types.size > 0
