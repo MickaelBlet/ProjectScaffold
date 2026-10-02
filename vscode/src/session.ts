@@ -211,6 +211,9 @@ export class DiagramSession {
         await vscode.commands.executeCommand(`${sidePanelId(msg.panel)}.focus`)
         if (msg.dependency !== undefined) this.sessions.showDependency(msg.dependency)
         return
+      case 'log':
+        this.sessions.log(msg.line)
+        return
       case 'ready':
         return this.sessions.ready(this)
     }
@@ -367,6 +370,8 @@ export class Sessions implements vscode.Disposable {
   private readonly pending = new Map<string, ToPage[]>()
   /** Documents whose opening showed the views already (projectScaffold.views.revealOnOpen). */
   private readonly revealed = new Set<string>()
+  /** Output log of the pages: code generation, messages. */
+  private readonly output = vscode.window.createOutputChannel('ProjectScaffold')
   private readonly subscriptions = vscode.Disposable.from(
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (!e.contentChanges.length) return
@@ -667,8 +672,13 @@ export class Sessions implements vscode.Disposable {
     for (const s of this.all) if (s !== from) void s.post({ type: 'storage', key, value })
   }
 
+  log(line: string): void {
+    this.output.appendLine(line)
+  }
+
   dispose(): void {
     this.subscriptions.dispose()
     this.opened.dispose()
+    this.output.dispose()
   }
 }
