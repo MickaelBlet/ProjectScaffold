@@ -305,6 +305,9 @@ export class DiagramSession {
       case 'outputFile':
         await reply(msg.id, await this.sessions.outputFile(msg.dir, msg.path, msg.op, msg.text))
         return
+      case 'openOutputFile':
+        await this.sessions.openOutputFile(msg.dir, msg.path)
+        return
       case 'openSibling': {
         // Opened the way this one is: full diagram, or text (its preview is a click away).
         const uri = sibling(this.uri, msg.file)
@@ -609,6 +612,20 @@ export class Sessions implements vscode.Disposable {
     return { dir: dir.toString(), label: vscode.workspace.asRelativePath(dir) }
   }
 
+  /** A file of an output directory given to a page; null when the path leaves it. */
+  private outputUri(dir: string, path: string): vscode.Uri | null {
+    const parts = path.split('/')
+    if (!this.outputs.has(dir) || parts.some((p) => !p || p === '.' || p === '..' || p.includes('\\')))
+      return null
+    return vscode.Uri.joinPath(vscode.Uri.parse(dir), ...parts)
+  }
+
+  /** Opens a file of an output or template directory in its own editor. */
+  async openOutputFile(dir: string, path: string): Promise<void> {
+    const uri = this.outputUri(dir, path)
+    if (uri) await vscode.commands.executeCommand('vscode.open', uri)
+  }
+
   /** Reads, writes or removes a file of an output directory given to a page. */
   async outputFile(
     dir: string,
@@ -616,10 +633,8 @@ export class Sessions implements vscode.Disposable {
     op: 'read' | 'write' | 'remove',
     text = ''
   ): Promise<OutputFileReply> {
-    const parts = path.split('/')
-    if (!this.outputs.has(dir) || parts.some((p) => !p || p === '.' || p === '..' || p.includes('\\')))
-      return { error: `'${path}' is not a file of the output directory` }
-    const uri = vscode.Uri.joinPath(vscode.Uri.parse(dir), ...parts)
+    const uri = this.outputUri(dir, path)
+    if (!uri) return { error: `'${path}' is not a file of the output directory` }
     try {
       switch (op) {
         case 'read':
