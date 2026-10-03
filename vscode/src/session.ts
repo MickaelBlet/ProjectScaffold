@@ -9,6 +9,7 @@ import { lineOfPath } from '../../src/renderer/src/model/serialize'
 import { webviewHtml } from './html'
 import type {
   DiagramAction,
+  LogLevel,
   OutputDirReply,
   OutputFileReply,
   SidePanel,
@@ -212,7 +213,7 @@ export class DiagramSession {
         if (msg.dependency !== undefined) this.sessions.showDependency(msg.dependency)
         return
       case 'log':
-        this.sessions.log(msg.line)
+        this.sessions.log(msg.level, msg.text)
         return
       case 'ready':
         return this.sessions.ready(this)
@@ -371,7 +372,7 @@ export class Sessions implements vscode.Disposable {
   /** Documents whose opening showed the views already (projectScaffold.views.revealOnOpen). */
   private readonly revealed = new Set<string>()
   /** Output log of the pages: code generation, messages. */
-  private readonly output = vscode.window.createOutputChannel('ProjectScaffold')
+  private readonly output = vscode.window.createOutputChannel('ProjectScaffold', { log: true })
   private readonly subscriptions = vscode.Disposable.from(
     vscode.workspace.onDidChangeTextDocument((e) => {
       if (!e.contentChanges.length) return
@@ -672,8 +673,10 @@ export class Sessions implements vscode.Disposable {
     for (const s of this.all) if (s !== from) void s.post({ type: 'storage', key, value })
   }
 
-  log(line: string): void {
-    this.output.appendLine(line)
+  log(level: LogLevel, text: string): void {
+    if (level === 'error') this.output.error(text)
+    else if (level === 'warning') this.output.warn(text)
+    else this.output.info(text)
   }
 
   dispose(): void {
