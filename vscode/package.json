@@ -69,23 +69,6 @@
         },
         {
           "type": "webview",
-          "id": "projectScaffold.panel.modules",
-          "name": "Modules"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.panel.links",
-          "name": "Links",
-          "visibility": "collapsed"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.panel.dependencies",
-          "name": "Dependencies",
-          "visibility": "collapsed"
-        },
-        {
-          "type": "webview",
           "id": "projectScaffold.panel.settings",
           "name": "Settings",
           "visibility": "collapsed"
@@ -505,7 +488,7 @@
         "projectScaffold.preview.showSideBar": {
           "type": "boolean",
           "default": true,
-          "description": "Opening a preview shows the ProjectScaffold views (Explorer, Modules, Links, Dependencies, Settings)."
+          "description": "Opening a preview shows the ProjectScaffold views (Explorer, Settings)."
         },
         "projectScaffold.generate.outputDir": {
           "type": "string",

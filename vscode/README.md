@@ -11,7 +11,7 @@ code skeleton generators. Built-in **C++17 code generation** (with a Python peer
 - **Text and diagram side by side**: edit either one, the other follows. Undo, save, hot exit and git diff stay
   VS Code's: the file is a regular text document.
 - **Linked selection**: the text cursor and the diagram selection follow each other.
-- **Side bar** with the app's Explorer, Modules, Links, Dependencies and Settings for the file being edited.
+- **Side bar** with the app's Explorer and Settings for the file being edited.
 - **Problems** panel and **Outline** / breadcrumbs for project files, on the line of each entity.
 - **Export** YAML/JSON (no editor data, for generators) and the diagram as PNG/SVG.
 - **Generate Code**: a C++17 CMake project, hand-written code kept across generations.
@@ -69,7 +69,7 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 
 - Changes made on either side update the other; undo in the preview undoes the diagram's changes.
 - Selecting an entity in the side bar shows it in the diagram and the text; opening a view or an editor opens it
-  in the diagram (a preview when none is open); _Show dependency_ opens the Dependencies view.
+  in the diagram (a preview when none is open); a dependency shows in the diagram's Inspector.
 - While a diagram has the focus, its shortcuts win over VS Code's (Ctrl+P, Ctrl+Shift+P, Ctrl+E…): its own
   command palette is Ctrl+Shift+P, `?` lists every shortcut.
 

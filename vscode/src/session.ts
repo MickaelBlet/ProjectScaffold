@@ -210,7 +210,6 @@ export class DiagramSession {
         return this.sessions.store(this, msg.key, msg.value)
       case 'showPanel':
         await vscode.commands.executeCommand(`${sidePanelId(msg.panel)}.focus`)
-        if (msg.dependency !== undefined) this.sessions.showDependency(msg.dependency)
         return
       case 'log':
         this.sessions.log(msg.level, msg.text)
@@ -365,8 +364,6 @@ export class Sessions implements vscode.Disposable {
   private readonly outputs = new Set<string>()
   /** View shown by the diagrams of each document (by name, null: global). */
   private readonly views = new Map<string, ViewRef>()
-  /** Dependency to show in a Dependencies panel not ready yet (by name). */
-  private dependency: string | undefined
   /** Messages for the diagram of a document not ready yet (by URI), see toDiagram. */
   private readonly pending = new Map<string, ToPage[]>()
   /** Documents whose opening showed the views already (projectScaffold.views.revealOnOpen). */
@@ -533,17 +530,6 @@ export class Sessions implements vscode.Disposable {
     }
     this.follow()
     if (this.current) await panel.show(this.current)
-    if (panel.sidePanel === 'dependencies' && this.dependency !== undefined) {
-      await panel.post({ type: 'dependency', name: this.dependency })
-      this.dependency = undefined
-    }
-  }
-
-  /** Shows a dependency in the Dependencies panels; the next one ready when none is. */
-  showDependency(name: string): void {
-    const panels = [...this.all].filter((s) => s.sidePanel === 'dependencies')
-    if (panels.length) for (const s of panels) void s.post({ type: 'dependency', name })
-    else this.dependency = name
   }
 
   /** A page selected an entity: the other pages of its document show it. */
