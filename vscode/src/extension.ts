@@ -1,22 +1,22 @@
 // ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open in the full diagram
 // editor, or as text with an editable diagram preview beside them; the text cursor and the diagram
-// selection follow each other. The app's Explorer and Settings are views of the ProjectScaffold
-// container, opened with the first project file, unless the full editor docks every tool in its page
-// (full layout). Problems go to the Problems panel, the outline of the text to the Outline view.
+// selection follow each other. The app's Explorer, Code generation and Settings are tabs of the
+// ProjectScaffold side bar view, opened with the first project file, unless the diagrams dock every
+// tool in their page (full layout). Problems go to the Problems panel, the outline of the text to the Outline view.
 import * as vscode from 'vscode'
 import { structureAt } from '../../src/renderer/src/components/completion'
 import { ScaffoldEditorProvider } from './editor'
 import { symbolProvider } from './outline'
 import { Previews } from './preview'
 import { Problems } from './problems'
-import { SIDE_PANELS, SidePanelProvider } from './sidebar'
+import { SidePanelProvider } from './sidebar'
 import {
   PREVIEW_TYPE,
   PROJECT_FILE,
   Sessions,
   VIEW_TYPE,
   setEditorLayout,
-  sidePanelId,
+  SIDE_VIEW,
   syncSelection
 } from './session'
 
@@ -88,12 +88,10 @@ export function activate(context: vscode.ExtensionContext): void {
       supportsMultipleEditorsPerDocument: false
     }),
     vscode.window.registerWebviewPanelSerializer(PREVIEW_TYPE, previews),
-    // Each panel in the ProjectScaffold container.
-    ...SIDE_PANELS.map((panel) =>
-      vscode.window.registerWebviewViewProvider(sidePanelId(panel), new SidePanelProvider(sessions, panel), {
-        webviewOptions: { retainContextWhenHidden: true }
-      })
-    ),
+    // The view of the ProjectScaffold container, its tools in tabs.
+    vscode.window.registerWebviewViewProvider(SIDE_VIEW, new SidePanelProvider(sessions), {
+      webviewOptions: { retainContextWhenHidden: true }
+    }),
     vscode.languages.registerDocumentSymbolProvider(
       { pattern: '**/*.scaffold.{yaml,yml,json}' },
       symbolProvider

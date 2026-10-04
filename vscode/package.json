@@ -64,19 +64,8 @@
       "projectScaffold": [
         {
           "type": "webview",
-          "id": "projectScaffold.panel.explorer",
-          "name": "Explorer"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.panel.generation",
-          "name": "Code Generation"
-        },
-        {
-          "type": "webview",
-          "id": "projectScaffold.panel.settings",
-          "name": "Settings",
-          "visibility": "collapsed"
+          "id": "projectScaffold.panel",
+          "name": "ProjectScaffold"
         }
       ]
     },
@@ -331,17 +320,17 @@
       "view/title": [
         {
           "command": "projectScaffold.generate",
-          "when": "view == projectScaffold.panel.explorer",
+          "when": "view == projectScaffold.panel",
           "group": "navigation@1"
         },
         {
           "command": "projectScaffold.generateInto",
-          "when": "view == projectScaffold.panel.explorer",
+          "when": "view == projectScaffold.panel",
           "group": "generate"
         },
         {
           "command": "projectScaffold.codeTemplates",
-          "when": "view == projectScaffold.panel.explorer",
+          "when": "view == projectScaffold.panel",
           "group": "generate"
         }
       ]
@@ -528,7 +517,7 @@
         "projectScaffold.views.revealOnOpen": {
           "type": "boolean",
           "default": true,
-          "description": "Show the ProjectScaffold views when a project file is first opened in the window."
+          "description": "Show the ProjectScaffold side bar when a project file is first opened in the window."
         },
         "projectScaffold.editor.layout": {
           "type": "string",
@@ -559,7 +548,7 @@
         "projectScaffold.preview.showSideBar": {
           "type": "boolean",
           "default": true,
-          "description": "Opening a preview shows the ProjectScaffold views (Explorer, Code generation, Settings), in the integrated layout."
+          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Code generation, Settings), in the integrated layout."
         },
         "projectScaffold.generate.outputDir": {
           "type": "string",

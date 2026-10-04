@@ -1,5 +1,5 @@
 // A page of the app bound to a project document: the full diagram editor (editor.ts), the preview
-// beside its text (preview.ts), or a tool panel of the side bar (sidebar.ts), which follows the active
+// beside its text (preview.ts), or the side bar view, its tools in tabs (sidebar.ts), which follows the active
 // project document. The TextDocument is the source of truth: the page sends the new text after each
 // change of the project, and changes of the text made elsewhere (text editor, undo, file on disk,
 // another page) are sent to the page. Selections go from page to page by data path of the file.
@@ -200,9 +200,7 @@ export class DiagramSession {
     /** Document shown; a side panel changes it, and may have none. */
     public uri: vscode.Uri | undefined,
     readonly mode: WebviewMode,
-    private readonly sessions: Sessions,
-    /** Side panel shown (mode `panel`). */
-    readonly sidePanel?: SidePanel
+    private readonly sessions: Sessions
   ) {}
 
   /** A diagram (not a side panel) in the active editor group. */
@@ -251,8 +249,7 @@ export class DiagramSession {
       case 'storage':
         return this.sessions.store(this, msg.key, msg.value)
       case 'showPanel':
-        await vscode.commands.executeCommand(`${sidePanelId(msg.panel)}.focus`)
-        return
+        return this.sessions.showPanel(msg.panel)
       case 'setLayout':
         return setEditorLayout(msg.layout)
       case 'log':
@@ -388,8 +385,8 @@ export class DiagramSession {
   }
 }
 
-/** View id of a side panel in the ProjectScaffold container (see package.json). */
-export const sidePanelId = (panel: SidePanel): string => `projectScaffold.panel.${panel}`
+/** The ProjectScaffold side bar view: one page, the app's side tools in tabs (see package.json). */
+export const SIDE_VIEW = 'projectScaffold.panel'
 
 function documentInit(document: vscode.TextDocument | undefined): Pick<WebviewInit, 'path' | 'uri' | 'text'> {
   if (!document) return { path: '', uri: '', text: '' }
@@ -417,6 +414,8 @@ export class Sessions implements vscode.Disposable {
   private readonly pending = new Map<string, ToPage[]>()
   /** Documents whose opening showed the views already (projectScaffold.views.revealOnOpen). */
   private readonly revealed = new Set<string>()
+  /** Tab of the side bar view asked for before it was loaded (see showPanel). */
+  private sideTab: SidePanel | undefined
   /** Built-in templates shown read-only. */
   private readonly builtins = new BuiltinTemplates()
   /** Output log of the pages: code generation, messages. */
@@ -471,10 +470,9 @@ export class Sessions implements vscode.Disposable {
   async open(
     panel: vscode.WebviewPanel | vscode.WebviewView,
     document: vscode.TextDocument | undefined,
-    mode: WebviewMode,
-    sidePanel?: SidePanel
+    mode: WebviewMode
   ): Promise<void> {
-    const session = new DiagramSession(panel, document?.uri, mode, this, sidePanel)
+    const session = new DiagramSession(panel, document?.uri, mode, this)
     this.all.add(session)
     panel.webview.options = { enableScripts: true, localResourceRoots: [this.media] }
     // Text changes one at a time, in order: a save follows the edit before it. The other messages do
@@ -502,7 +500,7 @@ export class Sessions implements vscode.Disposable {
     const init: WebviewInit = {
       ...documentInit(document),
       mode: session.mode,
-      panel: session.sidePanel,
+      panel: session.mode === 'panel' ? this.takeSideTab() : undefined,
       layout: session.mode === 'panel' ? undefined : editorLayout(),
       storage: this.storage()
     }
@@ -511,7 +509,7 @@ export class Sessions implements vscode.Disposable {
   }
 
   /** The layout of the diagrams changed: they load again, keeping their view (page state). Back in the
-   *  integrated layout, the ProjectScaffold views show the tools the diagrams no longer have. */
+   *  integrated layout, the ProjectScaffold view shows the tools the diagrams no longer have. */
   private async relayout(): Promise<void> {
     const layout = editorLayout()
     await vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, layout)
@@ -560,14 +558,27 @@ export class Sessions implements vscode.Disposable {
     await this.revealViews()
   }
 
-  /** Opens the ProjectScaffold container (unless its Explorer is visible), the focus staying in the editor. */
+  /** Opens the ProjectScaffold container (unless its view is visible), the focus staying in the editor. */
   async revealViews(): Promise<void> {
-    const visible = [...this.all].some(
-      (s) => s.sidePanel === 'explorer' && 'visible' in s.panel && s.panel.visible
-    )
+    const visible = [...this.all].some((s) => s.mode === 'panel' && 'visible' in s.panel && s.panel.visible)
     if (visible) return
-    await vscode.commands.executeCommand(`${sidePanelId('explorer')}.focus`)
+    await vscode.commands.executeCommand(`${SIDE_VIEW}.focus`)
     await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup')
+  }
+
+  /** Shows a tab of the side bar view, opening the view (the tab is given to the page it loads). */
+  async showPanel(panel: SidePanel): Promise<void> {
+    const views = [...this.all].filter((s) => s.mode === 'panel')
+    for (const s of views) void s.post({ type: 'showPanel', panel })
+    if (!views.length) this.sideTab = panel
+    await vscode.commands.executeCommand(`${SIDE_VIEW}.focus`)
+  }
+
+  /** Tab asked for before the side bar view was loaded, once. */
+  private takeSideTab(): SidePanel | undefined {
+    const tab = this.sideTab
+    this.sideTab = undefined
+    return tab
   }
 
   /** Runs an app command in a diagram of a project document (`uri`, else the one being edited). */

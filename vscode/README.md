@@ -12,7 +12,7 @@ across binaries.
 - **Text and diagram side by side**: edit either one, the other follows. Undo, save, hot exit and git diff stay
   VS Code's: the file is a regular text document.
 - **Linked selection**: the text cursor and the diagram selection follow each other.
-- **Side bar** with the app's Explorer, Code generation and Settings for the file being edited.
+- **Side bar** with the app's Explorer, Code generation and Settings in tabs, for the file being edited.
 - **Two layouts** for the full diagram editor and the preview: _integrated_ (Explorer, Code generation and Settings
   in the VS Code side bar, compact preview) or _full_ (every tool docked in the diagram, like the web app), switched
   by a button.
