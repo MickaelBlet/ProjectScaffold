@@ -5,7 +5,7 @@ Diagram editor for software architecture inside VS Code: **modules**, **ports**,
 code skeleton generators. Built-in **code generation**: C++ (C++98 to C++20) and Python, calling each other
 across binaries.
 
-![ProjectScaffold diagram of the fleet drone example](https://raw.githubusercontent.com/MickaelBlet/ProjectScaffold/HEAD/docs/demo.png)
+![ProjectScaffold in VS Code: side bar, diagram preview and YAML text of the fleet drone example](https://raw.githubusercontent.com/MickaelBlet/ProjectScaffold/HEAD/docs/vscode.png)
 
 ## Features
 
@@ -146,7 +146,7 @@ the diagram's Inspector (Ctrl+,); Theme _VS Code_ (the default) follows the colo
 Language-agnostic YAML/JSON, described by a JSON Schema:
 [`schema/scaffold.schema.json`](https://github.com/MickaelBlet/ProjectScaffold/blob/HEAD/schema/scaffold.schema.json).
 The `editor` section holds layout only and is ignored by generators. Full reference in the
-[main README](https://github.com/MickaelBlet/ProjectScaffold#file-format).
+[file format reference](https://github.com/MickaelBlet/ProjectScaffold/blob/HEAD/docs/file-format.md).
 
 Workspace files (`*.scaffold-workspace.yaml`) are not opened by the extension: open project files one by one.
 
