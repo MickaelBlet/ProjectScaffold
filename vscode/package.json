@@ -2,7 +2,7 @@
   "name": "project-scaffold-vscode",
   "displayName": "ProjectScaffold",
   "description": "Software architecture editor for *.scaffold.yaml files: modules, ports, typed interfaces and links",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "publisher": "mblet",
   "author": "Mickaël Blet",
   "license": "MIT",
