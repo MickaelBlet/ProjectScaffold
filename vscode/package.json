@@ -532,11 +532,11 @@
             "full"
           ],
           "enumDescriptions": [
-            "Explorer and Settings in the ProjectScaffold side bar, the Inspector in the editor",
-            "Every tool docked in the editor, like the web app; templates and generated files open in its tabs"
+            "Explorer and Settings in the ProjectScaffold side bar, the Inspector in the full editor, the preview compact",
+            "Every tool docked in the full editor and the preview, like the web app; templates and generated files open in their tabs"
           ],
           "default": "integrated",
-          "markdownDescription": "Layout of the full diagram editor. _Switch to Full Layout_ / _Switch to Integrated Layout_ (editor title bar, toolbar of the diagram) change it for every editor."
+          "markdownDescription": "Layout of the full diagram editor and the preview. _Switch to Full Layout_ / _Switch to Integrated Layout_ (editor title bar, toolbar of the diagram) change it for every diagram."
         },
         "projectScaffold.preview.position": {
           "type": "string",
@@ -554,7 +554,7 @@
         "projectScaffold.preview.showSideBar": {
           "type": "boolean",
           "default": true,
-          "description": "Opening a preview shows the ProjectScaffold views (Explorer, Settings)."
+          "description": "Opening a preview shows the ProjectScaffold views (Explorer, Settings), in the integrated layout."
         },
         "projectScaffold.generate.outputDir": {
           "type": "string",

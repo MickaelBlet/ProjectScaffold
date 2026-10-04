@@ -32,7 +32,7 @@ export const PROJECT_FILE = /\.scaffold\.(ya?ml|json)$/i
 /** Context keys: a diagram has the keyboard focus (its shortcuts win, see package.json); is active. */
 const FOCUS_CONTEXT = 'projectScaffold.focused'
 const ACTIVE_CONTEXT = 'projectScaffold.diagramActive'
-/** Context key: layout of the full diagram editors (see EditorLayout). */
+/** Context key: layout of the diagrams (see EditorLayout). */
 const LAYOUT_CONTEXT = 'projectScaffold.layout'
 /** Global state key of the page preferences (settings, panel layout, recent commands). */
 const STORAGE_KEY = 'storage'
@@ -46,11 +46,11 @@ const ORDERED = new Set<ToHost['type']>(['edit', 'save', 'undo', 'redo', 'select
 export const syncSelection = (): boolean =>
   vscode.workspace.getConfiguration('projectScaffold').get<boolean>('syncSelection', true)
 
-/** Layout of the full diagram editors (setting projectScaffold.editor.layout). */
+/** Layout of the diagrams (setting projectScaffold.editor.layout). */
 export const editorLayout = (): EditorLayout =>
   vscode.workspace.getConfiguration('projectScaffold').get<EditorLayout>('editor.layout', 'integrated')
 
-/** Switches the layout of the full diagram editors, for every window (they load again, see Sessions). */
+/** Switches the layout of the diagrams, for every window (they load again, see Sessions). */
 export const setEditorLayout = (layout: EditorLayout): Thenable<void> =>
   vscode.workspace
     .getConfiguration('projectScaffold')
@@ -467,17 +467,17 @@ export class Sessions implements vscode.Disposable {
       ...documentInit(document),
       mode: session.mode,
       panel: session.sidePanel,
-      layout: session.mode === 'editor' ? editorLayout() : undefined,
+      layout: session.mode === 'panel' ? undefined : editorLayout(),
       storage: this.storage()
     }
     session.written = undefined
     session.panel.webview.html = await webviewHtml(this.media, session.panel.webview, init)
   }
 
-  /** The layout of the full diagram editors changed: they load again, keeping their view (page state). */
+  /** The layout of the diagrams changed: they load again, keeping their view (page state). */
   private async relayout(): Promise<void> {
     await vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, editorLayout())
-    for (const s of this.all) if (s.mode === 'editor') await this.load(s, await s.document())
+    for (const s of this.all) if (s.mode !== 'panel') await this.load(s, await s.document())
   }
 
   /** Document for a new side panel. */
@@ -514,9 +514,8 @@ export class Sessions implements vscode.Disposable {
       .getConfiguration('projectScaffold')
       .get<boolean>('views.revealOnOpen', true)
     if (!reveal || this.revealed.has(key)) return
-    // A full layout editor has the tools in the page.
-    const editor = this.active()
-    if (editor?.mode === 'editor' && editor.shows(uri) && editorLayout() === 'full') return
+    // A diagram in the full layout has the tools in its page.
+    if (editorLayout() === 'full' && [...this.all].some((s) => s.mode !== 'panel' && s.shows(uri))) return
     this.revealed.add(key)
     await this.revealViews()
   }
