@@ -16,8 +16,6 @@ import { PREVIEW_TYPE, PROJECT_FILE, Sessions, VIEW_TYPE, sidePanelId, syncSelec
 const APP_COMMANDS: Record<string, string> = {
   'projectScaffold.addModule': 'insert.module',
   'projectScaffold.arrange': 'arrange.auto',
-  'projectScaffold.exportYaml': 'file.exportYaml',
-  'projectScaffold.exportJson': 'file.exportJson',
   'projectScaffold.exportPng': 'file.exportPng',
   'projectScaffold.exportSvg': 'file.exportSvg'
 }

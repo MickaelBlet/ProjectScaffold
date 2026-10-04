@@ -107,18 +107,6 @@
         "icon": "$(layout)"
       },
       {
-        "command": "projectScaffold.exportYaml",
-        "title": "Export YAML…",
-        "category": "ProjectScaffold",
-        "icon": "$(export)"
-      },
-      {
-        "command": "projectScaffold.exportJson",
-        "title": "Export JSON…",
-        "category": "ProjectScaffold",
-        "icon": "$(json)"
-      },
-      {
         "command": "projectScaffold.exportPng",
         "title": "Export Diagram as PNG…",
         "category": "ProjectScaffold"
@@ -173,14 +161,6 @@
           "when": "projectScaffold.diagramActive"
         },
         {
-          "command": "projectScaffold.exportYaml",
-          "when": "projectScaffold.diagramActive"
-        },
-        {
-          "command": "projectScaffold.exportJson",
-          "when": "projectScaffold.diagramActive"
-        },
-        {
           "command": "projectScaffold.exportPng",
           "when": "projectScaffold.diagramActive"
         },
@@ -220,16 +200,6 @@
           "command": "projectScaffold.showSource",
           "when": "projectScaffold.diagramActive",
           "group": "navigation@1"
-        },
-        {
-          "command": "projectScaffold.exportYaml",
-          "when": "projectScaffold.diagramActive",
-          "group": "navigation@2"
-        },
-        {
-          "command": "projectScaffold.exportJson",
-          "when": "projectScaffold.diagramActive",
-          "group": "navigation@3"
         },
         {
           "command": "projectScaffold.exportPng",
