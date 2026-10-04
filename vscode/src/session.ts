@@ -474,10 +474,14 @@ export class Sessions implements vscode.Disposable {
     session.panel.webview.html = await webviewHtml(this.media, session.panel.webview, init)
   }
 
-  /** The layout of the diagrams changed: they load again, keeping their view (page state). */
+  /** The layout of the diagrams changed: they load again, keeping their view (page state). Back in the
+   *  integrated layout, the ProjectScaffold views show the tools the diagrams no longer have. */
   private async relayout(): Promise<void> {
-    await vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, editorLayout())
-    for (const s of this.all) if (s.mode !== 'panel') await this.load(s, await s.document())
+    const layout = editorLayout()
+    await vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, layout)
+    const diagrams = [...this.all].filter((s) => s.mode !== 'panel')
+    for (const s of diagrams) await this.load(s, await s.document())
+    if (layout === 'integrated' && diagrams.length) await this.revealViews()
   }
 
   /** Document for a new side panel. */

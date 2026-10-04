@@ -85,7 +85,8 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 
 Switch with the **Full** / **Integrated** button of the diagram's toolbar, _Window › Full layout_, the editor
 title button (**Switch to Full Layout** / **Switch to Integrated Layout**) or the setting
-`projectScaffold.editor.layout`. Every open diagram follows, keeping its views; the full editor and the preview
+`projectScaffold.editor.layout`. Every open diagram follows, keeping its views; back to the integrated layout, the
+ProjectScaffold side bar shows; the full editor and the preview
 keep their own panel arrangement in each layout. The preview keeps its own undo history in both.
 
 ## Code generation
