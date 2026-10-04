@@ -2,6 +2,8 @@
 
 The extension opens `*.scaffold.yaml` / `.yml` / `.json` files as text, with an editable diagram preview beside them, like the Markdown preview. Its own README, with the commands and settings tables: [`vscode/README.md`](../vscode/README.md). Building and installing it: [Building › VS Code extension](building.md#vs-code-extension).
 
+![ProjectScaffold in VS Code: side bar, diagram preview and the drone example's text](vscode.png)
+
 ## Text and preview
 
 - _Open Preview_: editor title, Ctrl+K V, or the explorer menu for any other YAML/JSON project file. The preview opens on the left of the text by default (`projectScaffold.preview.position`).

@@ -513,7 +513,7 @@
         "projectScaffold.generate.templates": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Template folder of the code generated from a project file, relative to the file (a `manifest.yaml` and its templates); empty: the output directory's `.scaffold/templates`, else the built-in C++17 templates. _Code Templates…_ picks another one, remembered for the file in the workspace."
+          "markdownDescription": "Template folder of the code generated from a project file, relative to the file (a `manifest.yaml` and its templates); empty: the output directory's `.scaffold/templates`, else the project's built-in template set (`generation.templates`, default `cpp17`). _Code Templates…_ picks another one, remembered for the file in the workspace."
         }
       }
     }
