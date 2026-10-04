@@ -79,10 +79,10 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 
 ### Layouts
 
-| Layout                   | Tools                                                                                                                                                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Integrated (the default) | Explorer, Code generation and Settings in the ProjectScaffold side bar, Inspector in the full editor, compact preview (no menu bar, tools on demand); templates and generated files open in VS Code's editors |
-| Full                     | Explorer, Code generation, Search, Inspector, Settings, Problems and Output docked in the full editor and the preview, with the menu bar, like the web app; templates and generated files open in their tabs  |
+| Layout                   | Tools                                                                                                                                                                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integrated (the default) | Explorer, Code generation and Settings in the ProjectScaffold side bar, Inspector in the full editor, compact preview (no menu bar, tools on demand); templates (built-in ones read-only) and generated files open in VS Code's editors |
+| Full                     | Explorer, Code generation, Search, Inspector, Settings, Problems and Output docked in the full editor and the preview, with the menu bar, like the web app; templates and generated files open in their tabs                            |
 
 Switch with the **Full** / **Integrated** button of the diagram's toolbar, _Window › Full layout_, the editor
 title button (**Switch to Full Layout** / **Switch to Integrated Layout**) or the setting

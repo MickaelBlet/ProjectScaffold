@@ -22,6 +22,34 @@ import type {
   WebviewMode
 } from './protocol'
 
+/** URI scheme of the built-in templates shown read-only (see BuiltinTemplates). */
+export const BUILTIN_SCHEME = 'projectscaffold-builtin'
+
+/** Built-in templates, given by the pages (the extension does not bundle them), read-only documents. */
+export class BuiltinTemplates implements vscode.TextDocumentContentProvider {
+  private readonly texts = new Map<string, string>()
+  private readonly changed = new vscode.EventEmitter<vscode.Uri>()
+  readonly onDidChange = this.changed.event
+
+  /** URI of a built-in template, `<set>/<file>`, keeping its text. */
+  set(path: string, text: string): vscode.Uri {
+    const uri = vscode.Uri.from({ scheme: BUILTIN_SCHEME, path: `/${path}` })
+    if (this.texts.get(uri.path) !== text) {
+      this.texts.set(uri.path, text)
+      this.changed.fire(uri)
+    }
+    return uri
+  }
+
+  provideTextDocumentContent(uri: vscode.Uri): string {
+    return this.texts.get(uri.path) ?? ''
+  }
+
+  dispose(): void {
+    this.changed.dispose()
+  }
+}
+
 /** Full diagram editor (custom editor). */
 export const VIEW_TYPE = 'projectScaffold.editor'
 /** Diagram preview beside the text. */
@@ -233,6 +261,8 @@ export class DiagramSession {
       case 'codegen':
         this.sessions.codegen(this)
         return
+      case 'openBuiltin':
+        return this.sessions.openBuiltin(msg.path, msg.text, msg.at)
       case 'ready':
         return this.sessions.ready(this)
     }
@@ -387,6 +417,8 @@ export class Sessions implements vscode.Disposable {
   private readonly pending = new Map<string, ToPage[]>()
   /** Documents whose opening showed the views already (projectScaffold.views.revealOnOpen). */
   private readonly revealed = new Set<string>()
+  /** Built-in templates shown read-only. */
+  private readonly builtins = new BuiltinTemplates()
   /** Output log of the pages: code generation, messages. */
   private readonly output = vscode.window.createOutputChannel('ProjectScaffold', { log: true })
   private readonly subscriptions = vscode.Disposable.from(
@@ -395,6 +427,7 @@ export class Sessions implements vscode.Disposable {
       for (const s of this.of(e.document)) s.changed(e.document.getText())
     }),
     vscode.window.onDidChangeActiveTextEditor(() => this.follow()),
+    vscode.workspace.registerTextDocumentContentProvider(BUILTIN_SCHEME, this.builtins),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('projectScaffold.editor.layout')) void this.relayout()
     })
@@ -663,6 +696,13 @@ export class Sessions implements vscode.Disposable {
     return vscode.Uri.joinPath(vscode.Uri.parse(dir), ...parts)
   }
 
+  /** Shows a built-in template in a read-only editor, selecting `at`. */
+  async openBuiltin(path: string, text: string, at?: TextSpot): Promise<void> {
+    const uri = this.builtins.set(path, text)
+    const selection = at && new vscode.Range(at.line - 1, at.column, at.line - 1, at.column + at.length)
+    await vscode.commands.executeCommand('vscode.open', uri, selection && { selection })
+  }
+
   /** Opens a file of an output or template directory in its own editor, selecting `at`. */
   async openOutputFile(dir: string, path: string, at?: TextSpot): Promise<void> {
     const uri = this.outputUri(dir, path)
@@ -719,6 +759,7 @@ export class Sessions implements vscode.Disposable {
 
   dispose(): void {
     this.subscriptions.dispose()
+    this.builtins.dispose()
     this.opened.dispose()
     this.output.dispose()
   }
