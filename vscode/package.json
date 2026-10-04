@@ -526,7 +526,7 @@
             "full"
           ],
           "enumDescriptions": [
-            "Explorer and Code generation in the ProjectScaffold side bar, the Inspector and Settings in the full editor, the preview compact",
+            "Explorer and Code generation in the ProjectScaffold side bar, the Inspector and Settings in the full editor and the preview",
             "Every tool docked in the full editor and the preview, like the web app; templates and generated files open in their tabs"
           ],
           "default": "integrated",
