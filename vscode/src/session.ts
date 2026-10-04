@@ -230,6 +230,9 @@ export class DiagramSession {
       case 'log':
         this.sessions.log(msg.level, msg.text)
         return
+      case 'codegen':
+        this.sessions.codegen(this)
+        return
       case 'ready':
         return this.sessions.ready(this)
     }
@@ -579,6 +582,11 @@ export class Sessions implements vscode.Disposable {
   reveal(from: DiagramSession, path: DataPath): void {
     for (const s of this.all)
       if (s !== from && s.shows(from.uri)) void s.post({ type: 'reveal', path, names: [] })
+  }
+
+  /** A page generated code or chose other templates: the other pages of its document list the files again. */
+  codegen(from: DiagramSession): void {
+    for (const s of this.all) if (s !== from && s.shows(from.uri)) void s.post({ type: 'codegen' })
   }
 
   /** A diagram shows another view: its side panels follow. */
