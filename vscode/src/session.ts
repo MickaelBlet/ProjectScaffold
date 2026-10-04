@@ -13,6 +13,7 @@ import type {
   OutputDirReply,
   OutputFileReply,
   SidePanel,
+  TextSpot,
   ToHost,
   ToPage,
   ViewRef,
@@ -309,7 +310,7 @@ export class DiagramSession {
         await reply(msg.id, await this.sessions.outputFile(msg.dir, msg.path, msg.op, msg.text))
         return
       case 'openOutputFile':
-        await this.sessions.openOutputFile(msg.dir, msg.path)
+        await this.sessions.openOutputFile(msg.dir, msg.path, msg.at)
         return
       case 'openSibling': {
         // Opened the way this one is: full diagram, or text (its preview is a click away).
@@ -612,10 +613,11 @@ export class Sessions implements vscode.Disposable {
     return vscode.Uri.joinPath(vscode.Uri.parse(dir), ...parts)
   }
 
-  /** Opens a file of an output or template directory in its own editor. */
-  async openOutputFile(dir: string, path: string): Promise<void> {
+  /** Opens a file of an output or template directory in its own editor, selecting `at`. */
+  async openOutputFile(dir: string, path: string, at?: TextSpot): Promise<void> {
     const uri = this.outputUri(dir, path)
-    if (uri) await vscode.commands.executeCommand('vscode.open', uri)
+    const selection = at && new vscode.Range(at.line - 1, at.column, at.line - 1, at.column + at.length)
+    if (uri) await vscode.commands.executeCommand('vscode.open', uri, selection && { selection })
   }
 
   /** Reads, writes or removes a file of an output directory given to a page. */
