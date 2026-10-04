@@ -95,6 +95,18 @@
         "icon": "$(go-to-file)"
       },
       {
+        "command": "projectScaffold.layoutFull",
+        "title": "Switch to Full Layout",
+        "category": "ProjectScaffold",
+        "icon": "$(layout-sidebar-left)"
+      },
+      {
+        "command": "projectScaffold.layoutIntegrated",
+        "title": "Switch to Integrated Layout",
+        "category": "ProjectScaffold",
+        "icon": "$(layout-sidebar-left-off)"
+      },
+      {
         "command": "projectScaffold.addModule",
         "title": "Add Module",
         "category": "ProjectScaffold",
@@ -117,6 +129,16 @@
         "category": "ProjectScaffold"
       },
       {
+        "command": "projectScaffold.importSettings",
+        "title": "Import Settings…",
+        "category": "ProjectScaffold"
+      },
+      {
+        "command": "projectScaffold.exportSettings",
+        "title": "Export Settings…",
+        "category": "ProjectScaffold"
+      },
+      {
         "command": "projectScaffold.generate",
         "title": "Generate Code",
         "category": "ProjectScaffold",
@@ -130,6 +152,26 @@
       {
         "command": "projectScaffold.codeTemplates",
         "title": "Code Templates…",
+        "category": "ProjectScaffold"
+      },
+      {
+        "command": "projectScaffold.generationPanel",
+        "title": "Show Code Generation Panel",
+        "category": "ProjectScaffold"
+      },
+      {
+        "command": "projectScaffold.search",
+        "title": "Show Search Panel",
+        "category": "ProjectScaffold"
+      },
+      {
+        "command": "projectScaffold.problems",
+        "title": "Show Problems Panel",
+        "category": "ProjectScaffold"
+      },
+      {
+        "command": "projectScaffold.output",
+        "title": "Show Output Panel",
         "category": "ProjectScaffold"
       },
       {
@@ -153,6 +195,14 @@
           "when": "projectScaffold.diagramActive"
         },
         {
+          "command": "projectScaffold.layoutFull",
+          "when": "projectScaffold.diagramActive && projectScaffold.layout != 'full'"
+        },
+        {
+          "command": "projectScaffold.layoutIntegrated",
+          "when": "projectScaffold.diagramActive && projectScaffold.layout == 'full'"
+        },
+        {
           "command": "projectScaffold.addModule",
           "when": "projectScaffold.diagramActive"
         },
@@ -169,6 +219,14 @@
           "when": "projectScaffold.diagramActive"
         },
         {
+          "command": "projectScaffold.importSettings",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.exportSettings",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
           "command": "projectScaffold.generate",
           "when": "projectScaffold.diagramActive || resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
         },
@@ -179,6 +237,22 @@
         {
           "command": "projectScaffold.codeTemplates",
           "when": "projectScaffold.diagramActive || resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/"
+        },
+        {
+          "command": "projectScaffold.generationPanel",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.search",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.problems",
+          "when": "projectScaffold.diagramActive"
+        },
+        {
+          "command": "projectScaffold.output",
+          "when": "projectScaffold.diagramActive"
         },
         {
           "command": "projectScaffold.noop",
@@ -200,6 +274,16 @@
           "command": "projectScaffold.showSource",
           "when": "projectScaffold.diagramActive",
           "group": "navigation@1"
+        },
+        {
+          "command": "projectScaffold.layoutFull",
+          "when": "projectScaffold.diagramActive && projectScaffold.layout != 'full'",
+          "group": "navigation@2"
+        },
+        {
+          "command": "projectScaffold.layoutIntegrated",
+          "when": "projectScaffold.diagramActive && projectScaffold.layout == 'full'",
+          "group": "navigation@2"
         },
         {
           "command": "projectScaffold.exportPng",
@@ -337,18 +421,6 @@
         "when": "projectScaffold.focused"
       },
       {
-        "key": "ctrl+shift+o",
-        "mac": "cmd+shift+o",
-        "command": "projectScaffold.noop",
-        "when": "projectScaffold.focused"
-      },
-      {
-        "key": "ctrl+shift+l",
-        "mac": "cmd+shift+l",
-        "command": "projectScaffold.noop",
-        "when": "projectScaffold.focused"
-      },
-      {
         "key": "ctrl+shift+m",
         "mac": "cmd+shift+m",
         "command": "projectScaffold.noop",
@@ -357,6 +429,12 @@
       {
         "key": "ctrl+shift+f",
         "mac": "cmd+shift+f",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
+        "key": "ctrl+shift+u",
+        "mac": "cmd+shift+u",
         "command": "projectScaffold.noop",
         "when": "projectScaffold.focused"
       },
@@ -419,6 +497,11 @@
         "when": "projectScaffold.focused"
       },
       {
+        "key": "alt+z",
+        "command": "projectScaffold.noop",
+        "when": "projectScaffold.focused"
+      },
+      {
         "key": "f1",
         "command": "projectScaffold.noop",
         "when": "projectScaffold.focused"
@@ -441,6 +524,19 @@
           "type": "boolean",
           "default": true,
           "description": "Show the ProjectScaffold views when a project file is first opened in the window."
+        },
+        "projectScaffold.editor.layout": {
+          "type": "string",
+          "enum": [
+            "integrated",
+            "full"
+          ],
+          "enumDescriptions": [
+            "Explorer and Settings in the ProjectScaffold side bar, the Inspector in the editor",
+            "Every tool docked in the editor, like the web app; templates and generated files open in its tabs"
+          ],
+          "default": "integrated",
+          "markdownDescription": "Layout of the full diagram editor. _Switch to Full Layout_ / _Switch to Integrated Layout_ (editor title bar, toolbar of the diagram) change it for every editor."
         },
         "projectScaffold.preview.position": {
           "type": "string",

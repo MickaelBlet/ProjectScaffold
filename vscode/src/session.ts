@@ -9,6 +9,7 @@ import { lineOfPath } from '../../src/renderer/src/model/serialize'
 import { webviewHtml } from './html'
 import type {
   DiagramAction,
+  EditorLayout,
   LogLevel,
   OutputDirReply,
   OutputFileReply,
@@ -31,6 +32,8 @@ export const PROJECT_FILE = /\.scaffold\.(ya?ml|json)$/i
 /** Context keys: a diagram has the keyboard focus (its shortcuts win, see package.json); is active. */
 const FOCUS_CONTEXT = 'projectScaffold.focused'
 const ACTIVE_CONTEXT = 'projectScaffold.diagramActive'
+/** Context key: layout of the full diagram editors (see EditorLayout). */
+const LAYOUT_CONTEXT = 'projectScaffold.layout'
 /** Global state key of the page preferences (settings, panel layout, recent commands). */
 const STORAGE_KEY = 'storage'
 
@@ -42,6 +45,16 @@ const ORDERED = new Set<ToHost['type']>(['edit', 'save', 'undo', 'redo', 'select
 /** Whether the text cursor and the diagram selection follow each other. */
 export const syncSelection = (): boolean =>
   vscode.workspace.getConfiguration('projectScaffold').get<boolean>('syncSelection', true)
+
+/** Layout of the full diagram editors (setting projectScaffold.editor.layout). */
+export const editorLayout = (): EditorLayout =>
+  vscode.workspace.getConfiguration('projectScaffold').get<EditorLayout>('editor.layout', 'integrated')
+
+/** Switches the layout of the full diagram editors, for every window (they load again, see Sessions). */
+export const setEditorLayout = (layout: EditorLayout): Thenable<void> =>
+  vscode.workspace
+    .getConfiguration('projectScaffold')
+    .update('editor.layout', layout, vscode.ConfigurationTarget.Global)
 
 /** Smallest edit turning the document text into `text`: what lies between their common ends. */
 function minimalEdit(document: vscode.TextDocument, text: string): vscode.TextEdit {
@@ -152,7 +165,7 @@ const EXPORT_FILTERS: Record<string, Record<string, string[]>> = {
 
 export class DiagramSession {
   /** Text the page wrote last: its change event is not sent back. */
-  private written: string | undefined
+  written: string | undefined
 
   constructor(
     readonly panel: vscode.WebviewPanel | vscode.WebviewView,
@@ -212,6 +225,8 @@ export class DiagramSession {
       case 'showPanel':
         await vscode.commands.executeCommand(`${sidePanelId(msg.panel)}.focus`)
         return
+      case 'setLayout':
+        return setEditorLayout(msg.layout)
       case 'log':
         this.sessions.log(msg.level, msg.text)
         return
@@ -376,11 +391,15 @@ export class Sessions implements vscode.Disposable {
       if (!e.contentChanges.length) return
       for (const s of this.of(e.document)) s.changed(e.document.getText())
     }),
-    vscode.window.onDidChangeActiveTextEditor(() => this.follow())
+    vscode.window.onDidChangeActiveTextEditor(() => this.follow()),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('projectScaffold.editor.layout')) void this.relayout()
+    })
   )
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.follow()
+    void vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, editorLayout())
   }
 
   get media(): vscode.Uri {
@@ -439,9 +458,26 @@ export class Sessions implements vscode.Disposable {
     })
     if (document && mode !== 'panel') this.opened.fire(document)
     this.fireActive()
+    await this.load(session, document)
+  }
 
-    const init: WebviewInit = { ...documentInit(document), mode, panel: sidePanel, storage: this.storage() }
-    panel.webview.html = await webviewHtml(this.media, panel.webview, init)
+  /** Loads the page of a session, showing a document. */
+  private async load(session: DiagramSession, document: vscode.TextDocument | undefined): Promise<void> {
+    const init: WebviewInit = {
+      ...documentInit(document),
+      mode: session.mode,
+      panel: session.sidePanel,
+      layout: session.mode === 'editor' ? editorLayout() : undefined,
+      storage: this.storage()
+    }
+    session.written = undefined
+    session.panel.webview.html = await webviewHtml(this.media, session.panel.webview, init)
+  }
+
+  /** The layout of the full diagram editors changed: they load again, keeping their view (page state). */
+  private async relayout(): Promise<void> {
+    await vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, editorLayout())
+    for (const s of this.all) if (s.mode === 'editor') await this.load(s, await s.document())
   }
 
   /** Document for a new side panel. */
@@ -478,6 +514,9 @@ export class Sessions implements vscode.Disposable {
       .getConfiguration('projectScaffold')
       .get<boolean>('views.revealOnOpen', true)
     if (!reveal || this.revealed.has(key)) return
+    // A full layout editor has the tools in the page.
+    const editor = this.active()
+    if (editor?.mode === 'editor' && editor.shows(uri) && editorLayout() === 'full') return
     this.revealed.add(key)
     await this.revealViews()
   }

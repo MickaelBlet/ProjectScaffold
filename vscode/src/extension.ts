@@ -1,8 +1,8 @@
 // ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open in the full diagram
 // editor, or as text with an editable diagram preview beside them; the text cursor and the diagram
-// selection follow each other. The app's Explorer and Settings are views
-// of the ProjectScaffold container, opened with the first project file. Problems go to the Problems panel, the outline of the
-// text to the Outline view.
+// selection follow each other. The app's Explorer and Settings are views of the ProjectScaffold
+// container, opened with the first project file, unless the full editor docks every tool in its page
+// (full layout). Problems go to the Problems panel, the outline of the text to the Outline view.
 import * as vscode from 'vscode'
 import { structureAt } from '../../src/renderer/src/components/completion'
 import { ScaffoldEditorProvider } from './editor'
@@ -10,14 +10,28 @@ import { symbolProvider } from './outline'
 import { Previews } from './preview'
 import { Problems } from './problems'
 import { SIDE_PANELS, SidePanelProvider } from './sidebar'
-import { PREVIEW_TYPE, PROJECT_FILE, Sessions, VIEW_TYPE, sidePanelId, syncSelection } from './session'
+import {
+  PREVIEW_TYPE,
+  PROJECT_FILE,
+  Sessions,
+  VIEW_TYPE,
+  setEditorLayout,
+  sidePanelId,
+  syncSelection
+} from './session'
 
 /** VS Code commands running an app command in the active diagram. */
 const APP_COMMANDS: Record<string, string> = {
   'projectScaffold.addModule': 'insert.module',
   'projectScaffold.arrange': 'arrange.auto',
   'projectScaffold.exportPng': 'file.exportPng',
-  'projectScaffold.exportSvg': 'file.exportSvg'
+  'projectScaffold.exportSvg': 'file.exportSvg',
+  'projectScaffold.importSettings': 'file.importSettings',
+  'projectScaffold.exportSettings': 'file.exportSettings',
+  'projectScaffold.generationPanel': 'window.generation',
+  'projectScaffold.search': 'window.search',
+  'projectScaffold.problems': 'window.problems',
+  'projectScaffold.output': 'window.output'
 }
 
 /** VS Code commands running an app command for a project document (menus give its URI), in a diagram
@@ -109,6 +123,9 @@ export function activate(context: vscode.ExtensionContext): void {
       const target = uri ?? vscode.window.activeTextEditor?.document.uri
       if (target) void vscode.commands.executeCommand('vscode.openWith', target, VIEW_TYPE)
     }),
+    // Editor title buttons of the full diagram editors.
+    vscode.commands.registerCommand('projectScaffold.layoutFull', () => setEditorLayout('full')),
+    vscode.commands.registerCommand('projectScaffold.layoutIntegrated', () => setEditorLayout('integrated')),
     // Shortcuts of the diagram that VS Code must not run as well (see package.json).
     vscode.commands.registerCommand('projectScaffold.noop', () => {})
   )

@@ -2,7 +2,8 @@
 
 Diagram editor for software architecture inside VS Code: **modules**, **ports**, **typed interfaces** and
 **constrained links**, saved as a plain `*.scaffold.yaml` / `*.scaffold.yml` / `*.scaffold.json` file that feeds
-code skeleton generators. Built-in **C++17 code generation** (with a Python peer for remote links).
+code skeleton generators. Built-in **code generation**: C++ (C++98 to C++20) and Python, calling each other
+across binaries.
 
 ![ProjectScaffold diagram of the fleet drone example](https://raw.githubusercontent.com/MickaelBlet/ProjectScaffold/HEAD/docs/demo.png)
 
@@ -12,9 +13,11 @@ code skeleton generators. Built-in **C++17 code generation** (with a Python peer
   VS Code's: the file is a regular text document.
 - **Linked selection**: the text cursor and the diagram selection follow each other.
 - **Side bar** with the app's Explorer and Settings for the file being edited.
+- **Two layouts** for the full diagram editor: _integrated_ (Explorer and Settings in the VS Code side bar) or
+  _full_ (every tool docked in the editor, like the web app), switched by a button.
 - **Problems** panel and **Outline** / breadcrumbs for project files, on the line of each entity.
-- **Export** YAML/JSON (no editor data, for generators) and the diagram as PNG/SVG.
-- **Generate Code**: a C++17 CMake project, hand-written code kept across generations.
+- **Export** the diagram as PNG/SVG; the app settings as a JSON file, to import elsewhere.
+- **Generate Code**: C++ (C++98 to C++20) or Python projects, hand-written code kept across generations.
 - Colors follow the VS Code color theme.
 
 ## Getting started
@@ -65,7 +68,7 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 | --------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | Text + preview        | **Open Preview** (Ctrl+K V) on a project file                                                         | Editing text and diagram together        |
 | Full diagram editor   | **Reopen Editor With… › ProjectScaffold**, or **Open in Full Diagram Editor** (explorer context menu) | Diagram only, any YAML/JSON project file |
-| ProjectScaffold panel | Activity bar icon (opened with the first project file and with the preview)                           | Browsing modules, links, dependencies    |
+| ProjectScaffold panel | Activity bar icon (opened with the first project file and with the preview)                           | Explorer and Settings of the file        |
 
 - Changes made on either side update the other; undo in the preview undoes the diagram's changes.
 - Selecting an entity in the side bar shows it in the diagram and the text; opening a view or an editor opens it
@@ -73,11 +76,24 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 - While a diagram has the focus, its shortcuts win over VS Code's (Ctrl+P, Ctrl+Shift+P, Ctrl+E…): its own
   command palette is Ctrl+Shift+P, `?` lists every shortcut.
 
+### Full diagram editor layouts
+
+| Layout                   | Tools                                                                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Integrated (the default) | Explorer and Settings in the ProjectScaffold side bar, Inspector in the editor; templates and generated files open in VS Code's editors                            |
+| Full                     | Explorer, Code generation, Search, Inspector, Settings, Problems and Output docked in the editor, like the web app; templates and generated files open in its tabs |
+
+Switch with the **Full** / **Integrated** button of the diagram's toolbar, _Window › Full layout_, the editor
+title button (**Switch to Full Layout** / **Switch to Integrated Layout**) or the setting
+`projectScaffold.editor.layout`. Every open full diagram editor follows, keeping its views; each layout keeps its
+own panel arrangement. The preview beside the text keeps its compact layout.
+
 ## Code generation
 
-**Generate Code** renders the built-in LiquidJS templates into `generated/<project>` next to the file (setting
-`projectScaffold.generate.outputDir`); **Generate Code Into…** picks another directory, remembered for the file.
-The project must have no errors.
+**Generate Code** renders the project's template set (`generation.templates`, default `cpp17`) into
+`generated/<project>` next to the file (setting `projectScaffold.generate.outputDir`); **Generate Code Into…**
+picks another directory, remembered for the file. **Code Templates…** picks a folder of templates of your own
+(setting `projectScaffold.generate.templates`). The project must have no errors.
 
 Code written inside the user sections is kept when generating again:
 
@@ -98,16 +114,19 @@ bool Controller::setMode(const ::common::Mode mode)
 
 All under **ProjectScaffold:** in the command palette.
 
-| Command                             | Description                                       |
-| ----------------------------------- | ------------------------------------------------- |
-| Open Preview                        | Diagram beside the text (Ctrl+K V)                |
-| Open in Full Diagram Editor         | Diagram in its own editor                         |
-| Show Source                         | Text of the diagram's file                        |
-| Add Module                          | New module in the diagram                         |
-| Auto-arrange                        | Lay out the diagram (ELK)                         |
-| Export YAML… / Export JSON…         | Project file without editor data                  |
-| Export Diagram as PNG… / as SVG…    | Image of the diagram                              |
-| Generate Code / Generate Code Into… | C++17 code into the default or a chosen directory |
+| Command                                                 | Description                                 |
+| ------------------------------------------------------- | ------------------------------------------- |
+| Open Preview                                            | Diagram beside the text (Ctrl+K V)          |
+| Open in Full Diagram Editor                             | Diagram in its own editor                   |
+| Show Source                                             | Text of the diagram's file                  |
+| Switch to Full Layout / Switch to Integrated Layout     | Layout of the full diagram editors          |
+| Add Module                                              | New module in the diagram                   |
+| Auto-arrange                                            | Lay out the diagram (ELK)                   |
+| Export Diagram as PNG… / as SVG…                        | Image of the diagram                        |
+| Import Settings… / Export Settings…                     | App settings as a JSON file                 |
+| Generate Code / Generate Code Into…                     | Code into the default or a chosen directory |
+| Code Templates…                                         | Template folder generating the file's code  |
+| Show Code Generation / Search / Problems / Output Panel | Tool panel of the diagram                   |
 
 ## Settings
 
@@ -118,9 +137,11 @@ All under **ProjectScaffold:** in the command palette.
 | `projectScaffold.views.revealOnOpen`  | `true`                 | Opening a project file shows the ProjectScaffold side bar   |
 | `projectScaffold.preview.showSideBar` | `true`                 | Opening a preview shows the ProjectScaffold side bar        |
 | `projectScaffold.generate.outputDir`  | `generated/${project}` | Output of _Generate Code_, relative to the file             |
+| `projectScaffold.generate.templates`  | (empty)                | Template folder, relative to the file; empty: built-in set  |
+| `projectScaffold.editor.layout`       | `integrated`           | Layout of the full diagram editor (`integrated` / `full`)   |
 
-App settings (theme, link style, port style, grid, minimap…) are in the side bar's **Settings** view; Theme
-_VS Code_ (the default) follows the color theme.
+App settings (theme, link style, port style, grid, minimap, text editor…) are in the **Settings** view (side bar,
+or the editor in the full layout); Theme _VS Code_ (the default) follows the color theme.
 
 ## File format
 
