@@ -4,7 +4,7 @@
 // (projectScaffold.preview.showSideBar), but in the full layout, where its page has every tool.
 // Restored after a window reload.
 import * as vscode from 'vscode'
-import { PREVIEW_TYPE, editorLayout, type Sessions } from './session'
+import { PREVIEW_TYPE, previewLayout, type Sessions } from './session'
 
 const title = (uri: vscode.Uri): string => `Preview ${uri.path.split('/').pop() ?? ''}`
 
@@ -23,7 +23,7 @@ export class Previews implements vscode.WebviewPanelSerializer {
       await vscode.commands.executeCommand('workbench.action.focusRightGroup')
     } else await this.restore(this.create(uri, vscode.ViewColumn.Beside), uri)
     // Typing goes on in the text. In the full layout, the preview has the tools in its page.
-    if (config.get('showSideBar', true) && editorLayout() === 'integrated') await this.sessions.revealViews()
+    if (config.get('showSideBar', true) && previewLayout() === 'integrated') await this.sessions.revealViews()
   }
 
   private create(uri: vscode.Uri, viewColumn: vscode.ViewColumn): vscode.WebviewPanel {

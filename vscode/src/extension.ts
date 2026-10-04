@@ -1,11 +1,10 @@
-// ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open in the full diagram
-// editor, or as text with an editable diagram preview beside them; the text cursor and the diagram
-// selection follow each other. The app's Explorer and Code generation are tabs of the
-// ProjectScaffold side bar view, opened with the first project file, unless the diagrams dock every
-// tool in their page (full layout). Problems go to the Problems panel, the outline of the text to the Outline view.
+// ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open as text with an
+// editable diagram preview beside them; the text cursor and the diagram selection follow each other.
+// The app's Explorer and Code generation are tabs of the ProjectScaffold side bar view, opened with the
+// first project file, unless the previews dock every tool in their page (full layout). Problems go to
+// the Problems panel, the outline of the text to the Outline view.
 import * as vscode from 'vscode'
 import { structureAt } from '../../src/renderer/src/components/completion'
-import { ScaffoldEditorProvider } from './editor'
 import { symbolProvider } from './outline'
 import { Previews } from './preview'
 import { Problems } from './problems'
@@ -14,8 +13,7 @@ import {
   PREVIEW_TYPE,
   PROJECT_FILE,
   Sessions,
-  VIEW_TYPE,
-  setEditorLayout,
+  setPreviewLayout,
   SIDE_VIEW,
   syncSelection
 } from './session'
@@ -82,11 +80,6 @@ export function activate(context: vscode.ExtensionContext): void {
     followCursor(sessions),
     // Other files opened in a diagram (Open in ProjectScaffold) are project files too.
     sessions.onDidOpen((d) => problems.check(d)),
-    vscode.window.registerCustomEditorProvider(VIEW_TYPE, new ScaffoldEditorProvider(sessions), {
-      // The page keeps its view (zoom, selection, panels) while its tab is hidden.
-      webviewOptions: { retainContextWhenHidden: true },
-      supportsMultipleEditorsPerDocument: false
-    }),
     vscode.window.registerWebviewPanelSerializer(PREVIEW_TYPE, previews),
     // The view of the ProjectScaffold container, its tools in tabs.
     vscode.window.registerWebviewViewProvider(SIDE_VIEW, new SidePanelProvider(sessions), {
@@ -104,10 +97,14 @@ export function activate(context: vscode.ExtensionContext): void {
         sessions.runFor(uri instanceof vscode.Uri ? uri : undefined, command)
       )
     ),
-    // From the text editor title (uri given) or the palette (active text editor).
-    vscode.commands.registerCommand('projectScaffold.showPreview', (uri?: vscode.Uri) => {
+    // From the text editor title (uri given), the files' explorer (uri given, the file maybe not open:
+    // its text opens first) or the palette (active text editor).
+    vscode.commands.registerCommand('projectScaffold.showPreview', async (uri?: vscode.Uri) => {
       const target = uri ?? vscode.window.activeTextEditor?.document.uri
-      if (target) void previews.show(target)
+      if (!target) return
+      if (!vscode.window.visibleTextEditors.some((e) => e.document.uri.toString() === target.toString()))
+        await vscode.window.showTextDocument(target)
+      await previews.show(target)
     }),
     vscode.commands.registerCommand('projectScaffold.showSource', async () => {
       const session = sessions.active()
@@ -116,14 +113,9 @@ export function activate(context: vscode.ExtensionContext): void {
       const shown = vscode.window.visibleTextEditors.find((e) => e.document === document)
       await vscode.window.showTextDocument(document, shown?.viewColumn ?? vscode.ViewColumn.Beside)
     }),
-    // From the explorer (uri given) or the palette (active file).
-    vscode.commands.registerCommand('projectScaffold.openWith', (uri?: vscode.Uri) => {
-      const target = uri ?? vscode.window.activeTextEditor?.document.uri
-      if (target) void vscode.commands.executeCommand('vscode.openWith', target, VIEW_TYPE)
-    }),
-    // Editor title buttons of the full diagram editors.
-    vscode.commands.registerCommand('projectScaffold.layoutFull', () => setEditorLayout('full')),
-    vscode.commands.registerCommand('projectScaffold.layoutIntegrated', () => setEditorLayout('integrated')),
+    // Editor title buttons of the diagrams.
+    vscode.commands.registerCommand('projectScaffold.layoutFull', () => setPreviewLayout('full')),
+    vscode.commands.registerCommand('projectScaffold.layoutIntegrated', () => setPreviewLayout('integrated')),
     // Shortcuts of the diagram that VS Code must not run as well (see package.json).
     vscode.commands.registerCommand('projectScaffold.noop', () => {})
   )

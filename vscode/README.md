@@ -13,9 +13,8 @@ across binaries.
   VS Code's: the file is a regular text document.
 - **Linked selection**: the text cursor and the diagram selection follow each other.
 - **Side bar** with the app's Explorer and Code generation in tabs, for the file being edited.
-- **Two layouts** for the full diagram editor and the preview, which look the same: _integrated_ (Explorer and
-  Code generation in the VS Code side bar) or _full_ (every tool docked in the diagram, like the web app), switched
-  by a button.
+- **Two layouts** for the preview: _integrated_ (Explorer and Code generation in the VS Code side bar) or _full_
+  (every tool docked in the diagram, like the web app), switched by a button.
 - **Problems** panel and **Outline** / breadcrumbs for project files, on the line of each entity.
 - **Export** the diagram as PNG/SVG; the app settings as a JSON file, to import elsewhere.
 - **Generate Code**: C++ (C++98 to C++20) or Python projects, hand-written code kept across generations.
@@ -65,11 +64,10 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 
 ## Ways to edit
 
-| Mode                  | How to open                                                                                           | Use it for                               |
-| --------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| Text + preview        | **Open Preview** (Ctrl+K V) on a project file                                                         | Editing text and diagram together        |
-| Full diagram editor   | **Reopen Editor With… › ProjectScaffold**, or **Open in Full Diagram Editor** (explorer context menu) | Diagram only, any YAML/JSON project file |
-| ProjectScaffold panel | Activity bar icon (opened with the first project file and with the preview)                           | Explorer and Code generation of the file |
+| Mode                  | How to open                                                                                             | Use it for                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Text + preview        | **Open Preview** (Ctrl+K V, editor title) on a project file, or on any YAML/JSON file from the explorer | Editing text and diagram together        |
+| ProjectScaffold panel | Activity bar icon (opened with the first project file and with the preview)                             | Explorer and Code generation of the file |
 
 - Changes made on either side update the other; undo in the preview undoes the diagram's changes.
 - Selecting an entity in the side bar shows it in the diagram and the text; opening a view or an editor opens it
@@ -86,9 +84,8 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 
 Switch with the **Full** / **Integrated** button of the diagram's toolbar, _Window › Full layout_, the editor
 title button (**Switch to Full Layout** / **Switch to Integrated Layout**) or the setting
-`projectScaffold.editor.layout`. Every open diagram follows, keeping its views; back to the integrated layout, the
-ProjectScaffold side bar shows. The full editor and the preview look the same and share the panel arrangement of
-each layout; the preview keeps its own undo history.
+`projectScaffold.preview.layout`. Every open preview follows, keeping its views; back to the integrated layout, the
+ProjectScaffold side bar shows. Each layout keeps its own panel arrangement.
 
 ## Code generation
 
@@ -119,9 +116,8 @@ All under **ProjectScaffold:** in the command palette.
 | Command                                                 | Description                                 |
 | ------------------------------------------------------- | ------------------------------------------- |
 | Open Preview                                            | Diagram beside the text (Ctrl+K V)          |
-| Open in Full Diagram Editor                             | Diagram in its own editor                   |
 | Show Source                                             | Text of the diagram's file                  |
-| Switch to Full Layout / Switch to Integrated Layout     | Layout of the full diagram editors          |
+| Switch to Full Layout / Switch to Integrated Layout     | Layout of the previews                      |
 | Add Module                                              | New module in the diagram                   |
 | Auto-arrange                                            | Lay out the diagram (ELK)                   |
 | Export Diagram as PNG… / as SVG…                        | Image of the diagram                        |
@@ -140,7 +136,7 @@ All under **ProjectScaffold:** in the command palette.
 | `projectScaffold.preview.showSideBar` | `true`                 | Opening a preview shows the ProjectScaffold side bar        |
 | `projectScaffold.generate.outputDir`  | `generated/${project}` | Output of _Generate Code_, relative to the file             |
 | `projectScaffold.generate.templates`  | (empty)                | Template folder, relative to the file; empty: built-in set  |
-| `projectScaffold.editor.layout`       | `integrated`           | Layout of the full diagram editor (`integrated` / `full`)   |
+| `projectScaffold.preview.layout`      | `integrated`           | Layout of the preview (`integrated` / `full`)               |
 
 App settings (theme, link style, port style, grid, minimap, text editor…) are in the **Settings** panel, with
 the diagram's Inspector (Ctrl+,); Theme _VS Code_ (the default) follows the color theme.

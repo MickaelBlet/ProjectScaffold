@@ -33,24 +33,6 @@
     "LICENSE"
   ],
   "contributes": {
-    "customEditors": [
-      {
-        "viewType": "projectScaffold.editor",
-        "displayName": "ProjectScaffold",
-        "selector": [
-          {
-            "filenamePattern": "*.scaffold.yaml"
-          },
-          {
-            "filenamePattern": "*.scaffold.yml"
-          },
-          {
-            "filenamePattern": "*.scaffold.json"
-          }
-        ],
-        "priority": "default"
-      }
-    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -75,12 +57,6 @@
         "title": "Open Preview",
         "category": "ProjectScaffold",
         "icon": "$(open-preview)"
-      },
-      {
-        "command": "projectScaffold.openWith",
-        "title": "Open in Full Diagram Editor",
-        "category": "ProjectScaffold",
-        "icon": "$(type-hierarchy)"
       },
       {
         "command": "projectScaffold.showSource",
@@ -178,10 +154,6 @@
       "commandPalette": [
         {
           "command": "projectScaffold.showPreview",
-          "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/ && !projectScaffold.diagramActive"
-        },
-        {
-          "command": "projectScaffold.openWith",
           "when": "resourceExtname =~ /^\\.(ya?ml|json)$/ && !projectScaffold.diagramActive"
         },
         {
@@ -307,7 +279,7 @@
       ],
       "explorer/context": [
         {
-          "command": "projectScaffold.openWith",
+          "command": "projectScaffold.showPreview",
           "when": "resourceExtname =~ /^\\.(ya?ml|json)$/",
           "group": "navigation"
         },
@@ -519,18 +491,18 @@
           "default": true,
           "description": "Show the ProjectScaffold side bar when a project file is first opened in the window."
         },
-        "projectScaffold.editor.layout": {
+        "projectScaffold.preview.layout": {
           "type": "string",
           "enum": [
             "integrated",
             "full"
           ],
           "enumDescriptions": [
-            "Explorer and Code generation in the ProjectScaffold side bar, the Inspector and Settings in the full editor and the preview",
-            "Every tool docked in the full editor and the preview, like the web app; templates and generated files open in their tabs"
+            "Explorer and Code generation in the ProjectScaffold side bar, the Inspector and Settings in the preview",
+            "Every tool docked in the preview, like the web app; templates and generated files open in its tabs"
           ],
           "default": "integrated",
-          "markdownDescription": "Layout of the full diagram editor and the preview. _Switch to Full Layout_ / _Switch to Integrated Layout_ (editor title bar, toolbar of the diagram) change it for every diagram."
+          "markdownDescription": "Layout of the diagram preview. _Switch to Full Layout_ / _Switch to Integrated Layout_ (editor title bar, toolbar of the diagram) change it for every preview."
         },
         "projectScaffold.preview.position": {
           "type": "string",

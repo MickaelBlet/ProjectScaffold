@@ -1,6 +1,5 @@
-// A page of the app bound to a project document: the full diagram editor (editor.ts), the preview
-// beside its text (preview.ts), or the side bar view, its tools in tabs (sidebar.ts), which follows the active
-// project document. The TextDocument is the source of truth: the page sends the new text after each
+// A page of the app bound to a project document: the diagram preview beside its text (preview.ts), or
+// the side bar view, its tools in tabs (sidebar.ts), which follows the active project document. The TextDocument is the source of truth: the page sends the new text after each
 // change of the project, and changes of the text made elsewhere (text editor, undo, file on disk,
 // another page) are sent to the page. Selections go from page to page by data path of the file.
 import { isAbsolute } from 'node:path'
@@ -9,7 +8,7 @@ import { lineOfPath } from '../../src/renderer/src/model/serialize'
 import { webviewHtml } from './html'
 import type {
   DiagramAction,
-  EditorLayout,
+  PreviewLayout,
   LogLevel,
   OutputDirReply,
   OutputFileReply,
@@ -50,8 +49,6 @@ export class BuiltinTemplates implements vscode.TextDocumentContentProvider {
   }
 }
 
-/** Full diagram editor (custom editor). */
-export const VIEW_TYPE = 'projectScaffold.editor'
 /** Diagram preview beside the text. */
 export const PREVIEW_TYPE = 'projectScaffold.preview'
 /** Files whose text editor offers the preview (see package.json). */
@@ -60,7 +57,7 @@ export const PROJECT_FILE = /\.scaffold\.(ya?ml|json)$/i
 /** Context keys: a diagram has the keyboard focus (its shortcuts win, see package.json); is active. */
 const FOCUS_CONTEXT = 'projectScaffold.focused'
 const ACTIVE_CONTEXT = 'projectScaffold.diagramActive'
-/** Context key: layout of the diagrams (see EditorLayout). */
+/** Context key: layout of the diagrams (see PreviewLayout). */
 const LAYOUT_CONTEXT = 'projectScaffold.layout'
 /** Global state key of the page preferences (settings, panel layout, recent commands). */
 const STORAGE_KEY = 'storage'
@@ -68,21 +65,21 @@ const STORAGE_KEY = 'storage'
 type DataPath = (string | number)[]
 
 /** Messages handled in the order they come (see Sessions.open). */
-const ORDERED = new Set<ToHost['type']>(['edit', 'save', 'undo', 'redo', 'selected'])
+const ORDERED = new Set<ToHost['type']>(['edit', 'save', 'selected'])
 
 /** Whether the text cursor and the diagram selection follow each other. */
 export const syncSelection = (): boolean =>
   vscode.workspace.getConfiguration('projectScaffold').get<boolean>('syncSelection', true)
 
-/** Layout of the diagrams (setting projectScaffold.editor.layout). */
-export const editorLayout = (): EditorLayout =>
-  vscode.workspace.getConfiguration('projectScaffold').get<EditorLayout>('editor.layout', 'integrated')
+/** Layout of the diagrams (setting projectScaffold.preview.layout). */
+export const previewLayout = (): PreviewLayout =>
+  vscode.workspace.getConfiguration('projectScaffold').get<PreviewLayout>('preview.layout', 'integrated')
 
 /** Switches the layout of the diagrams, for every window (they load again, see Sessions). */
-export const setEditorLayout = (layout: EditorLayout): Thenable<void> =>
+export const setPreviewLayout = (layout: PreviewLayout): Thenable<void> =>
   vscode.workspace
     .getConfiguration('projectScaffold')
-    .update('editor.layout', layout, vscode.ConfigurationTarget.Global)
+    .update('preview.layout', layout, vscode.ConfigurationTarget.Global)
 
 /** Smallest edit turning the document text into `text`: what lies between their common ends. */
 function minimalEdit(document: vscode.TextDocument, text: string): vscode.TextEdit {
@@ -251,7 +248,7 @@ export class DiagramSession {
       case 'showPanel':
         return this.sessions.showPanel(msg.panel)
       case 'setLayout':
-        return setEditorLayout(msg.layout)
+        return setPreviewLayout(msg.layout)
       case 'log':
         this.sessions.log(msg.level, msg.text)
         return
@@ -280,10 +277,6 @@ export class DiagramSession {
       }
       case 'save':
         await document.save()
-        return
-      case 'undo':
-      case 'redo':
-        await vscode.commands.executeCommand(msg.type)
         return
       case 'selected':
         this.sessions.reveal(this, msg.path)
@@ -357,15 +350,10 @@ export class DiagramSession {
       case 'openOutputFile':
         await this.sessions.openOutputFile(msg.dir, msg.path, msg.at)
         return
-      case 'openSibling': {
-        // Opened the way this one is: full diagram, or text (its preview is a click away).
-        const uri = sibling(this.uri, msg.file)
-        if (this.mode === 'editor' && !/\.idl$/i.test(msg.file))
-          await vscode.commands.executeCommand('vscode.openWith', uri, VIEW_TYPE)
-        // 'default': the text editor, though the diagram is the default editor of project files.
-        else await vscode.commands.executeCommand('vscode.openWith', uri, 'default')
+      case 'openSibling':
+        // As text: its preview is a click away.
+        await vscode.commands.executeCommand('vscode.open', sibling(this.uri, msg.file))
         return
-      }
     }
   }
 
@@ -428,13 +416,13 @@ export class Sessions implements vscode.Disposable {
     vscode.window.onDidChangeActiveTextEditor(() => this.follow()),
     vscode.workspace.registerTextDocumentContentProvider(BUILTIN_SCHEME, this.builtins),
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('projectScaffold.editor.layout')) void this.relayout()
+      if (e.affectsConfiguration('projectScaffold.preview.layout')) void this.relayout()
     })
   )
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.follow()
-    void vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, editorLayout())
+    void vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, previewLayout())
   }
 
   get media(): vscode.Uri {
@@ -501,7 +489,7 @@ export class Sessions implements vscode.Disposable {
       ...documentInit(document),
       mode: session.mode,
       panel: session.mode === 'panel' ? this.takeSideTab() : undefined,
-      layout: session.mode === 'panel' ? undefined : editorLayout(),
+      layout: session.mode === 'panel' ? undefined : previewLayout(),
       storage: this.storage()
     }
     session.written = undefined
@@ -511,7 +499,7 @@ export class Sessions implements vscode.Disposable {
   /** The layout of the diagrams changed: they load again, keeping their view (page state). Back in the
    *  integrated layout, the ProjectScaffold view shows the tools the diagrams no longer have. */
   private async relayout(): Promise<void> {
-    const layout = editorLayout()
+    const layout = previewLayout()
     await vscode.commands.executeCommand('setContext', LAYOUT_CONTEXT, layout)
     const diagrams = [...this.all].filter((s) => s.mode !== 'panel')
     for (const s of diagrams) await this.load(s, await s.document())
@@ -553,7 +541,7 @@ export class Sessions implements vscode.Disposable {
       .get<boolean>('views.revealOnOpen', true)
     if (!reveal || this.revealed.has(key)) return
     // A diagram in the full layout has the tools in its page.
-    if (editorLayout() === 'full' && [...this.all].some((s) => s.mode !== 'panel' && s.shows(uri))) return
+    if (previewLayout() === 'full' && [...this.all].some((s) => s.mode !== 'panel' && s.shows(uri))) return
     this.revealed.add(key)
     await this.revealViews()
   }
