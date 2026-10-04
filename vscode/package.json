@@ -288,23 +288,6 @@
           "when": "resourceFilename =~ /\\.scaffold\\.(ya?ml|json)$/",
           "group": "navigation"
         }
-      ],
-      "view/title": [
-        {
-          "command": "projectScaffold.generate",
-          "when": "view == projectScaffold.panel",
-          "group": "navigation@1"
-        },
-        {
-          "command": "projectScaffold.generateInto",
-          "when": "view == projectScaffold.panel",
-          "group": "generate"
-        },
-        {
-          "command": "projectScaffold.codeTemplates",
-          "when": "view == projectScaffold.panel",
-          "group": "generate"
-        }
       ]
     },
     "keybindings": [
