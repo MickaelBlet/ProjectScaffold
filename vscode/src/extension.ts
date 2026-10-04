@@ -1,6 +1,6 @@
 // ProjectScaffold for VS Code. Project files (*.scaffold.{yaml,yml,json}) open in the full diagram
 // editor, or as text with an editable diagram preview beside them; the text cursor and the diagram
-// selection follow each other. The app's Explorer, Code generation and Settings are tabs of the
+// selection follow each other. The app's Explorer and Code generation are tabs of the
 // ProjectScaffold side bar view, opened with the first project file, unless the diagrams dock every
 // tool in their page (full layout). Problems go to the Problems panel, the outline of the text to the Outline view.
 import * as vscode from 'vscode'

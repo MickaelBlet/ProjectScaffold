@@ -526,7 +526,7 @@
             "full"
           ],
           "enumDescriptions": [
-            "Explorer, Code generation and Settings in the ProjectScaffold side bar, the Inspector in the full editor, the preview compact",
+            "Explorer and Code generation in the ProjectScaffold side bar, the Inspector and Settings in the full editor, the preview compact",
             "Every tool docked in the full editor and the preview, like the web app; templates and generated files open in their tabs"
           ],
           "default": "integrated",
@@ -548,7 +548,7 @@
         "projectScaffold.preview.showSideBar": {
           "type": "boolean",
           "default": true,
-          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Code generation, Settings), in the integrated layout."
+          "description": "Opening a preview shows the ProjectScaffold side bar (Explorer, Code generation), in the integrated layout."
         },
         "projectScaffold.generate.outputDir": {
           "type": "string",

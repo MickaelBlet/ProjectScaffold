@@ -1,5 +1,5 @@
-// The ProjectScaffold side bar view: a page showing the app's side tools (Explorer, Code generation,
-// Settings) in tabs, for the active project document (see Sessions.follow).
+// The ProjectScaffold side bar view: a page showing the app's side tools (Explorer, Code generation)
+// in tabs, for the active project document (see Sessions.follow).
 import type * as vscode from 'vscode'
 import type { Sessions } from './session'
 

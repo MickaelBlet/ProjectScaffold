@@ -12,9 +12,9 @@ across binaries.
 - **Text and diagram side by side**: edit either one, the other follows. Undo, save, hot exit and git diff stay
   VS Code's: the file is a regular text document.
 - **Linked selection**: the text cursor and the diagram selection follow each other.
-- **Side bar** with the app's Explorer, Code generation and Settings in tabs, for the file being edited.
-- **Two layouts** for the full diagram editor and the preview: _integrated_ (Explorer, Code generation and Settings
-  in the VS Code side bar, compact preview) or _full_ (every tool docked in the diagram, like the web app), switched
+- **Side bar** with the app's Explorer and Code generation in tabs, for the file being edited.
+- **Two layouts** for the full diagram editor and the preview: _integrated_ (Explorer and Code generation in the VS
+  Code side bar, compact preview) or _full_ (every tool docked in the diagram, like the web app), switched
   by a button.
 - **Problems** panel and **Outline** / breadcrumbs for project files, on the line of each entity.
 - **Export** the diagram as PNG/SVG; the app settings as a JSON file, to import elsewhere.
@@ -69,7 +69,7 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 | --------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | Text + preview        | **Open Preview** (Ctrl+K V) on a project file                                                         | Editing text and diagram together        |
 | Full diagram editor   | **Reopen Editor With… › ProjectScaffold**, or **Open in Full Diagram Editor** (explorer context menu) | Diagram only, any YAML/JSON project file |
-| ProjectScaffold panel | Activity bar icon (opened with the first project file and with the preview)                           | Explorer, Code generation, Settings      |
+| ProjectScaffold panel | Activity bar icon (opened with the first project file and with the preview)                           | Explorer and Code generation of the file |
 
 - Changes made on either side update the other; undo in the preview undoes the diagram's changes.
 - Selecting an entity in the side bar shows it in the diagram and the text; opening a view or an editor opens it
@@ -79,10 +79,10 @@ More examples: [`examples/`](https://github.com/MickaelBlet/ProjectScaffold/tree
 
 ### Layouts
 
-| Layout                   | Tools                                                                                                                                                                                                                                   |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Integrated (the default) | Explorer, Code generation and Settings in the ProjectScaffold side bar, Inspector in the full editor, compact preview (no menu bar, tools on demand); templates (built-in ones read-only) and generated files open in VS Code's editors |
-| Full                     | Explorer, Code generation, Search, Inspector, Settings, Problems and Output docked in the full editor and the preview, with the menu bar, like the web app; templates and generated files open in their tabs                            |
+| Layout                   | Tools                                                                                                                                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Integrated (the default) | Explorer and Code generation in the ProjectScaffold side bar, Inspector and Settings in the full editor, compact preview (no menu bar, tools on demand); templates (built-in ones read-only) and generated files open in VS Code's editors |
+| Full                     | Explorer, Code generation, Search, Inspector, Settings, Problems and Output docked in the full editor and the preview, with the menu bar, like the web app; templates and generated files open in their tabs                               |
 
 Switch with the **Full** / **Integrated** button of the diagram's toolbar, _Window › Full layout_, the editor
 title button (**Switch to Full Layout** / **Switch to Integrated Layout**) or the setting
@@ -142,8 +142,8 @@ All under **ProjectScaffold:** in the command palette.
 | `projectScaffold.generate.templates`  | (empty)                | Template folder, relative to the file; empty: built-in set  |
 | `projectScaffold.editor.layout`       | `integrated`           | Layout of the full diagram editor (`integrated` / `full`)   |
 
-App settings (theme, link style, port style, grid, minimap, text editor…) are in the **Settings** view (side bar,
-or the editor in the full layout); Theme _VS Code_ (the default) follows the color theme.
+App settings (theme, link style, port style, grid, minimap, text editor…) are in the **Settings** panel, with
+the diagram's Inspector (Ctrl+,); Theme _VS Code_ (the default) follows the color theme.
 
 ## File format
 
