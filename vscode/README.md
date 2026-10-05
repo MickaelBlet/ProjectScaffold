@@ -124,7 +124,8 @@ Errors block code generation; warnings do not.
 - **Add dependency…** (diagram's _Insert_ menu, or + in the Explorer's _Dependencies_) lists the project files
   and IDL files of the workspace, several at once (**Browse…** for others). Their types and interfaces are used
   read-only, like the project's own; their modules can be placed and linked to.
-- Dependencies are refreshed from the files next to the document.
+- Dependencies are refreshed from the files next to the document. Only project and IDL files are read; reading one out of
+  the workspace and of the document's folder asks first, once per folder.
 - **Import projects or IDL files** copies their content into the project instead.
 - IDL files (`#include` read next to the file and in its parent folders) open in VS Code's own editor.
 

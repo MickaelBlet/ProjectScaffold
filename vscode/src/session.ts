@@ -102,6 +102,9 @@ function minimalEdit(document: vscode.TextDocument, text: string): vscode.TextEd
 
 const sibling = (uri: vscode.Uri, file: string): vscode.Uri => vscode.Uri.joinPath(uri, '..', file)
 
+/** Files the pages may read: project files and IDL files. */
+const READABLE = /\.(ya?ml|json|idl)$/i
+
 /** Project files of the workspace (but `current`), else any file through the open dialog. The quick
  *  pick stays open when the page takes the focus back (a click in a webview does, after the fact). */
 async function pickProjectFile(current: vscode.Uri): Promise<vscode.Uri | undefined> {
@@ -317,27 +320,15 @@ export class DiagramSession {
         await reply(msg.id, files)
         return
       }
-      case 'readFile': {
-        let content: string | null = null
-        try {
-          if (isAbsolute(msg.path))
-            content = new TextDecoder().decode(await vscode.workspace.fs.readFile(vscode.Uri.file(msg.path)))
-        } catch {
-          // Missing or unreadable: the page tells.
-        }
-        await reply(msg.id, content)
+      case 'readFile':
+        await reply(
+          msg.id,
+          isAbsolute(msg.path) ? await this.sessions.read(this.uri, vscode.Uri.file(msg.path)) : null
+        )
         return
-      }
-      case 'readSibling': {
-        let content: string | null = null
-        try {
-          content = new TextDecoder().decode(await vscode.workspace.fs.readFile(sibling(this.uri, msg.file)))
-        } catch {
-          // Missing or unreadable: the page tells.
-        }
-        await reply(msg.id, content)
+      case 'readSibling':
+        await reply(msg.id, await this.sessions.read(this.uri, sibling(this.uri, msg.file)))
         return
-      }
       case 'outputDir':
         await reply(msg.id, await this.sessions.outputDir(this.uri, msg.pick, msg.name))
         return
@@ -396,6 +387,8 @@ export class Sessions implements vscode.Disposable {
   private current: vscode.Uri | undefined
   /** Output directories given to the pages: the only ones they write into. */
   private readonly outputs = new Set<string>()
+  /** Folders out of the workspace the pages may read files of (by URI), as answered by the user. */
+  private readonly readable = new Map<string, boolean>()
   /** View shown by the diagrams of each document (by name, null: global). */
   private readonly views = new Map<string, ViewRef>()
   /** Messages for the diagram of a document not ready yet (by URI), see toDiagram. */
@@ -685,6 +678,37 @@ export class Sessions implements vscode.Disposable {
     if (!dir) return null
     this.outputs.add(dir.toString())
     return { dir: dir.toString(), label: vscode.workspace.asRelativePath(dir) }
+  }
+
+  /**
+   * A project or IDL file a page of `document` reads (dependencies, includes); null when missing or
+   * refused. Files out of the workspace and of the document's folder are read once the user allows
+   * their folder: a project file must not read any file of the machine on its own.
+   */
+  async read(document: vscode.Uri, uri: vscode.Uri): Promise<string | null> {
+    if (!READABLE.test(uri.path)) return null
+    const dir = vscode.Uri.joinPath(uri, '..')
+    const home = vscode.Uri.joinPath(document, '..')
+    const inside =
+      !!vscode.workspace.getWorkspaceFolder(uri) ||
+      (dir.scheme === home.scheme &&
+        dir.authority === home.authority &&
+        `${dir.path}/`.startsWith(`${home.path}/`))
+    if (!inside && !this.readable.has(dir.toString())) {
+      const allow = 'Allow'
+      const answer = await vscode.window.showWarningMessage(
+        `${vscode.workspace.asRelativePath(document)} reads files out of the workspace in ${dir.fsPath}. Allow?`,
+        { modal: true, detail: 'Its dependencies or IDL includes are there.' },
+        allow
+      )
+      this.readable.set(dir.toString(), answer === allow)
+    }
+    if (!inside && !this.readable.get(dir.toString())) return null
+    try {
+      return new TextDecoder().decode(await vscode.workspace.fs.readFile(uri))
+    } catch {
+      return null // Missing or unreadable: the page tells.
+    }
   }
 
   /** A file of an output directory given to a page; null when the path leaves it. */
